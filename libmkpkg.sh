@@ -452,7 +452,7 @@ check_arch() {
             R=all
             break
         fi
-    fi
+    done
     if [ "${R}" = "" ]; then
         echo "Error: not support arch: $arch"
         exit 1
