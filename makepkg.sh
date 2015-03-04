@@ -31,10 +31,16 @@ else
 fi
 
 #####################################################################
-
+# check log file
 if [ "${FN_LOG}" = "" ]; then
     FN_LOG="/dev/stderr"
 fi
+echo a > "${FN_LOG}"
+if [ ! "$?" = "0" ]; then
+    FN_LOG="${DN}/makepkg.log"
+fi
+
+#####################################################################
 
 . ${DN_EXEC}/libbash.sh
 
