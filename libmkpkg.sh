@@ -440,11 +440,31 @@ checkout_sources() {
     done
 }
 
+ARCH_OUT=
+check_arch() {
+    V=$(uname -m)
+    R=
+    for i in ${arch[*]} ; do
+        if [ "${i}" = "${V}" ]; then
+            R=${V}
+        fi
+        if [ "${i}" = "all" ]; then
+            R=all
+            break
+        fi
+    fi
+    if [ "${R}" = "" ]; then
+        echo "Error: not support arch: $arch"
+        exit 1
+    fi
+    ARCH_OUT="${R}"
+}
+
 makepkg_tarpkg() {
-    PREFIX="${pkgname}-$(uname -m)"
+    PREFIX="${pkgname}-${ARCH_OUT}"
     type pkgver > /dev/null
     if [ "$?" = "0" ]; then
-        PREFIX="${pkgname}-$(pkgver)-$(uname -m)"
+        PREFIX="${pkgname}-$(pkgver)-${ARCH_OUT}"
     fi
     echo "[DBG] PREFIX=${PREFIX}"
     cd "${pkgdir}"

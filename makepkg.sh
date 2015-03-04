@@ -115,6 +115,8 @@ prepare_env
 #####################################################################
 DN_ORIGIN=$(pwd)
 
+check_arch
+
 check_makedepends
 
 down_sources
@@ -142,6 +144,7 @@ fi
 type package > /dev/null
 if [ "$?" = "0" ]; then
     ${MYEXEC} cd "${DN_ORIGIN}"
+    ${MYEXEC} mkdir -p "${pkgdir}"
     ${MYEXEC} package
 fi
 
