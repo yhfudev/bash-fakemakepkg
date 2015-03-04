@@ -269,59 +269,36 @@ download_extract_2tmp_syslinux () {
 check_installed_package() {
     PARAM_NAME=$*
     #INSTALLER=`ospkgget $OSTYPE apt-get`
-    FLG_EXIST=1
+    EXEC_CHKPKG="aptitude search '~i(~n name|~d description)'"
     case "$OSTYPE" in
-    Debian)
-        for i in $PARAM_NAME ; do
-            PKG=$(ospkgget $OSTYPE $i)
-            if [ "${PKG}" = "" ]; then
-                PKG="$i"
-            fi
-            echo "check arch pkg: ${PKG}" >> "${FN_LOG}"
-            aptitude search '~i(~n name|~d description)' ${PKG} > /dev/null
-            if [ ! "$?" = "0" ]; then
-                echo "fail"
-                return
-            fi
-        done
-        ;;
-
     RedHat)
-        for i in $PARAM_NAME ; do
-            PKG=$(ospkgget $OSTYPE $i)
-            if [ "${PKG}" = "" ]; then
-                PKG="$i"
-            fi
-            echo "check arch pkg: ${PKG}" >> "${FN_LOG}"
-            rpm -qa ${PKG} > /dev/null
-            if [ ! "$?" = "0" ]; then
-                echo "fail"
-                return
-            fi
-        done
+        EXEC_CHKPKG="rpm -qa"
         ;;
 
     Arch)
-        #echo "enter arch for pkgs: ${PARAM_NAME}" >> "${FN_LOG}"
-        for i in $PARAM_NAME ; do
-            #echo "enter loop arch for pkg: ${i}" >> "${FN_LOG}"
-            PKG=$(ospkgget $OSTYPE $i)
-            if [ "${PKG}" = "" ]; then
-                PKG="$i"
-            fi
-            echo "check arch pkg: ${PKG}" >> "${FN_LOG}"
-            pacman -Qs ${PKG} > /dev/null
-            if [ ! "$?" = "0" ]; then
-                echo "fail"
-                return
-            fi
-        done
+        EXEC_CHKPKG="pacman -Qs"
         ;;
     *)
         echo "[ERR] Not supported OS: $OSTYPE"
         exit 0
         ;;
     esac
+    #echo "enter arch for pkgs: ${PARAM_NAME}" >> "${FN_LOG}"
+    for i in $PARAM_NAME ; do
+        #echo "enter loop arch for pkg: ${i}" >> "${FN_LOG}"
+        PKG=$(ospkgget $OSTYPE $i)
+        if [ "${PKG}" = "" ]; then
+            PKG="$i"
+        fi
+        echo "check arch pkg: ${PKG}" >> "${FN_LOG}"
+        ${EXEC_CHKPKG} ${PKG} > /dev/null
+        if [ ! "$?" = "0" ]; then
+            echo "fail"
+            echo "check arch pkg: ${PKG} return fail!" >> "${FN_LOG}"
+            return
+        fi
+    done
+    echo "check arch pkg: ${PARAM_NAME} return ok!" >> "${FN_LOG}"
     echo "ok"
 }
 
