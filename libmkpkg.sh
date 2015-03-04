@@ -437,13 +437,13 @@ checkout_sources() {
 }
 
 makepkg_tarpkg() {
-    cd "${pkgdir}"
     PREFIX="${pkgname}-$(uname -m)"
     type pkgver > /dev/null
     if [ "$?" = "0" ]; then
         PREFIX="${pkgname}-$(pkgver)-$(uname -m)"
     fi
     echo "[DBG] PREFIX=${PREFIX}"
+    cd "${pkgdir}"
     case ${PKGEXT} in
     *.tar.xz)
         ${MYEXEC} tar -Jcf "${BASEDIR}/${PREFIX}.pkg.tar.xz" .

@@ -41,6 +41,14 @@ fi
 
 . ${DN_EXEC}/libmkpkg.sh
 
+check_valid_path() {
+    V=$(my_getpath "$1")
+    if [[ "${V}" = "" || "${V}" = "/" ]]; then
+        echo "Error: not set path variable: $1"
+        exit 1
+    fi
+}
+
 #####################################################################
 # process arguments
 
@@ -105,6 +113,9 @@ echo "[DBG] check version: $(pkgver)"
 
 checkout_sources
 
+check_valid_path "${pkgdir}"
+${MYEXEC} rm -rf "${pkgdir}"
+
 # call user's function
 type prepare > /dev/null
 if [ "$?" = "0" ]; then
@@ -122,9 +133,9 @@ type package > /dev/null
 if [ "$?" = "0" ]; then
     ${MYEXEC} cd "${DN_ORIGIN}"
     ${MYEXEC} package
-    ${MYEXEC} makepkg_tarpkg
 fi
 
 ${MYEXEC} cd "${DN_ORIGIN}"
+${MYEXEC} makepkg_tarpkg
 
 exit 0
