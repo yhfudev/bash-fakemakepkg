@@ -123,10 +123,13 @@ down_sources
 
 echo "[DBG] check version: $(pkgver)"
 
-checkout_sources
+check_valid_path "${srcdir}"
 
+${MYEXEC} mkdir -p "${pkgdir}"
 check_valid_path "${pkgdir}"
 ${MYEXEC} rm -rf "${pkgdir}"
+
+checkout_sources
 
 # call user's function
 type prepare > /dev/null

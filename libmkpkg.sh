@@ -351,7 +351,7 @@ down_sources() {
 
 checkout_sources() {
     if [ "${srcdir}/" = "/" ]; then
-        echo "[DBG] not set repo pkg dir"
+        echo "Error: not set repo srcdir"
         exit 1
     else
         echo "DONT remove ${srcdir}/!"
