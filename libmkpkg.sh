@@ -63,6 +63,8 @@ p2d_set 'multipath-tools'   'kpartx'
 p2d_set 'qemu-user-static-exp'  'qemu-user-static'
 p2d_set base-devel          build-essential
 p2d_set abs                 devscripts
+p2d_set yaourt              apt-file
+p2d_set gcc-libs            build-essential
 
 #####################################################################
 
