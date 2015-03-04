@@ -33,11 +33,11 @@ fi
 #####################################################################
 # check log file
 if [ "${FN_LOG}" = "" ]; then
-    FN_LOG="/dev/stderr"
+    export FN_LOG="/dev/stderr"
 fi
-echo a > "${FN_LOG}"
+echo "test line" > "${FN_LOG}"
 if [ ! "$?" = "0" ]; then
-    FN_LOG="${DN}/makepkg.log"
+    export FN_LOG="${DN}/makepkg.log"
 fi
 
 #####################################################################
