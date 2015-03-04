@@ -32,7 +32,7 @@ SRCPKGDEST=${DN}/repo
 EOF
 
 ${EXEC_MKPKG} --config "${DN}/mymakepkg.conf" -p "${DN}/PKGBUILD" --dryrun
-if [ "$?" = "0" ]; then
+if [ ! "$?" = "0" ]; then
     echo "error in checking the script!"
     exit 1
 fi

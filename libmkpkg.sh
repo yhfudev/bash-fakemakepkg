@@ -481,10 +481,14 @@ check_makedepends() {
     echo "Checking runtime dependencies..."
     LIST_MISS=
     for i in ${makedepends[*]} ; do
-        PKG=$(p2d_get "Debian" "$i")
-        RET=$(check_installed_package ${PKG})
+        PKG1x5=$(p2d_get "Debian" "$i")
+        if [ "${PKG1x5}" = "" ]; then
+            PKG1x5="$i"
+        fi
+        RET=$(check_installed_package ${PKG1x5})
+        #echo "Checking package '$i(${PKG1x5})', return ${RET}"
         if [ ! "$RET" = "ok" ]; then
-            LIST_MISS="${LIST_MISS} ${PKG}"
+            LIST_MISS="${LIST_MISS} ${PKG1x5}"
         fi
     done
     if [ ! "${LIST_MISS}" = "" ]; then

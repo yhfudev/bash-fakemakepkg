@@ -261,8 +261,6 @@ download_extract_2tmp_syslinux () {
     tar -xf "${FN_SYSLI}"
     cd -
 }
-p2d_set "pacman -Qs"        "aptitude search '~i(~n name|~d description)'"
-p2d_set "pacman -Sy"        "apt-get install -y"
 
 check_installed_package() {
     PARAM_NAME=$*
@@ -271,7 +269,12 @@ check_installed_package() {
     case "$OSTYPE" in
     Debian)
         for i in $PARAM_NAME ; do
-            aptitude search '~i(~n name|~d description)' $i
+            PKG=$(ospkgget $OSTYPE $i)
+            if [ "${PKG}" = "" ]; then
+                PKG="$i"
+            fi
+            echo "check arch pkg: ${PKG}" >> /dev/stderr
+            aptitude search '~i(~n name|~d description)' ${PKG} > /dev/null
             if [ ! "$?" = "0" ]; then
                 echo "fail"
                 return
@@ -281,7 +284,12 @@ check_installed_package() {
 
     RedHat)
         for i in $PARAM_NAME ; do
-            rpm -qa "$i"
+            PKG=$(ospkgget $OSTYPE $i)
+            if [ "${PKG}" = "" ]; then
+                PKG="$i"
+            fi
+            echo "check arch pkg: ${PKG}" >> /dev/stderr
+            rpm -qa ${PKG} > /dev/null
             if [ ! "$?" = "0" ]; then
                 echo "fail"
                 return
@@ -290,8 +298,15 @@ check_installed_package() {
         ;;
 
     Arch)
+        #echo "enter arch for pkgs: ${PARAM_NAME}" >> /dev/stderr
         for i in $PARAM_NAME ; do
-            pacman -Qs $i
+            #echo "enter loop arch for pkg: ${i}" >> /dev/stderr
+            PKG=$(ospkgget $OSTYPE $i)
+            if [ "${PKG}" = "" ]; then
+                PKG="$i"
+            fi
+            echo "check arch pkg: ${PKG}" >> /dev/stderr
+            pacman -Qs ${PKG} > /dev/null
             if [ ! "$?" = "0" ]; then
                 echo "fail"
                 return
@@ -319,7 +334,7 @@ install_package () {
         if [ "${PKG}" = "" ]; then
             PKG="$i"
         fi
-        echo "try to install package: $PKG($i)"
+        echo "check package: $PKG($i)"
         if [ "$i" = "gawk" ]; then
             if [ "$OSTYPE" = "RedHat" ]; then
                 echo "[DBG] patch gawk to support 'switch'"
@@ -384,6 +399,7 @@ install_package () {
         ;;
     esac
 
+    echo "try to install packages: ${PKGLST}"
     sudo $INSTALLER ${INST_OPTS} ${PKGLST}
     if [ "${FLG_GAWK_RH}" = "1" ]; then
         patch_centos_gawk
