@@ -37,7 +37,7 @@ if [ "${FN_LOG}" = "" ]; then
 fi
 echo "test line" > "${FN_LOG}"
 if [ ! "$?" = "0" ]; then
-    export FN_LOG="${DN}/makepkg.log"
+    export FN_LOG="$(pwd)/makepkg.log"
 fi
 
 #####################################################################
