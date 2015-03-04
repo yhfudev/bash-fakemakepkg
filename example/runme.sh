@@ -12,6 +12,8 @@ DN=$(pwd)
 
 EXEC_MKPKG="${DN}/makepkg.sh"
 
+#export GIT_SSL_NO_VERIFY=true
+
 check_install_tool() {
     if [ ! -x "${EXEC_MKPKG}" ]; then
         git clone https://github.com/yhfudev/bash-fakemakepkg.git "${DN}/fakemakepkg-git"
@@ -21,6 +23,7 @@ check_install_tool() {
         echo "error to get makepkg"
         exit 1
     fi
+    ( cd "${DN}/fakemakepkg-git" && git pull )
 }
 
 check_install_tool
