@@ -6,7 +6,9 @@ MYEXEC=
 #set MYEXEC to echo for dry run
 #MYEXEC="echo [DryRun]"
 
-FN_LOG=/dev/stderr
+if [ "${FN_LOG}" = "" ]; then
+    FN_LOG="/dev/stderr"
+fi
 
 BASEDIR=$(pwd)
 

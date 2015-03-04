@@ -11,8 +11,12 @@
 # detect if the ~/bin is included in environment variable $PATH
 echo $PATH | grep "~/bin"
 if [ ! "$?" = "0" ]; then
-    echo 'PATH=~/bin/:$PATH' >> ~/.bashrc
+    #echo 'PATH=~/bin/:$PATH' >> ~/.bashrc
     export PATH=~/bin:$PATH
+fi
+
+if [ "${FN_LOG}" = "" ]; then
+    FN_LOG="/dev/stderr"
 fi
 
 #####################################################################
@@ -273,7 +277,7 @@ check_installed_package() {
             if [ "${PKG}" = "" ]; then
                 PKG="$i"
             fi
-            echo "check arch pkg: ${PKG}" >> /dev/stderr
+            echo "check arch pkg: ${PKG}" >> "${FN_LOG}"
             aptitude search '~i(~n name|~d description)' ${PKG} > /dev/null
             if [ ! "$?" = "0" ]; then
                 echo "fail"
@@ -288,7 +292,7 @@ check_installed_package() {
             if [ "${PKG}" = "" ]; then
                 PKG="$i"
             fi
-            echo "check arch pkg: ${PKG}" >> /dev/stderr
+            echo "check arch pkg: ${PKG}" >> "${FN_LOG}"
             rpm -qa ${PKG} > /dev/null
             if [ ! "$?" = "0" ]; then
                 echo "fail"
@@ -298,14 +302,14 @@ check_installed_package() {
         ;;
 
     Arch)
-        #echo "enter arch for pkgs: ${PARAM_NAME}" >> /dev/stderr
+        #echo "enter arch for pkgs: ${PARAM_NAME}" >> "${FN_LOG}"
         for i in $PARAM_NAME ; do
-            #echo "enter loop arch for pkg: ${i}" >> /dev/stderr
+            #echo "enter loop arch for pkg: ${i}" >> "${FN_LOG}"
             PKG=$(ospkgget $OSTYPE $i)
             if [ "${PKG}" = "" ]; then
                 PKG="$i"
             fi
-            echo "check arch pkg: ${PKG}" >> /dev/stderr
+            echo "check arch pkg: ${PKG}" >> "${FN_LOG}"
             pacman -Qs ${PKG} > /dev/null
             if [ ! "$?" = "0" ]; then
                 echo "fail"

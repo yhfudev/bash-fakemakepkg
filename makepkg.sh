@@ -32,6 +32,10 @@ fi
 
 #####################################################################
 
+if [ "${FN_LOG}" = "" ]; then
+    FN_LOG="/dev/stderr"
+fi
+
 . ${DN_EXEC}/libbash.sh
 
 if [ ! -f "${DN_EXEC}/libmkpkg.sh" ]; then
