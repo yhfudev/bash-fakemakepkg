@@ -41,6 +41,10 @@ detect_os_type () {
     test -e /etc/fedora-release && OSTYPE="RedHat"
     which pacman && OSTYPE="Arch"
     which opkg && OSTYPE="OpenWrt"
+    which emerge && OSTYPE="Gentoo"
+    which zypper && OSTYPE="SUSE"
+    which rug && OSTYPE="Novell"
+    #which smart && OSTYPE="Smart" # http://labix.org/smart
 
     OSDIST=
     OSVERSION=
@@ -269,14 +273,17 @@ download_extract_2tmp_syslinux () {
 check_installed_package() {
     PARAM_NAME=$*
     #INSTALLER=`ospkgget $OSTYPE apt-get`
-    EXEC_CHKPKG="aptitude search '~i(~n name|~d description)'"
+    EXEC_CHKPKG="dpkg -s"
     case "$OSTYPE" in
     RedHat)
-        EXEC_CHKPKG="rpm -qa"
+        EXEC_CHKPKG="rpm -qi"
         ;;
 
     Arch)
-        EXEC_CHKPKG="pacman -Qs"
+        EXEC_CHKPKG="pacman -Qi"
+        ;;
+    Gentoo)
+        EXEC_CHKPKG="emerge -pv" # and emerge -S 
         ;;
     *)
         echo "[ERR] Not supported OS: $OSTYPE"

@@ -140,7 +140,8 @@ check_valid_path "${pkgdir}"
 ${MYEXEC} rm -rf "${pkgdir}"
 
 if [ "${FLG_CLEAN_BEFORE}" = "1" ]; then
-    rm -rf ${srcdir}/*
+    echo "[DBG] remove source dir '${srcdir}' ..." >> "${FN_LOG}"
+    ${MYEXEC} rm -rf ${srcdir}/*
 fi
 
 checkout_sources
@@ -148,28 +149,33 @@ checkout_sources
 # call user's function
 type prepare > /dev/null
 if [ "$?" = "0" ]; then
+    echo "[DBG] call user prepare() ..." >> "${FN_LOG}"
     ${MYEXEC} cd "${DN_ORIGIN}"
     ${MYEXEC} prepare
 fi
 
 type build > /dev/null
 if [ "$?" = "0" ]; then
+    echo "[DBG] call user build() ..." >> "${FN_LOG}"
     ${MYEXEC} cd "${DN_ORIGIN}"
     ${MYEXEC} build
 fi
 
 type package > /dev/null
 if [ "$?" = "0" ]; then
+    echo "[DBG] call user package() ..." >> "${FN_LOG}"
     ${MYEXEC} cd "${DN_ORIGIN}"
     ${MYEXEC} mkdir -p "${pkgdir}"
     ${MYEXEC} package
 fi
 
+echo "[DBG] make package ..." >> "${FN_LOG}"
 ${MYEXEC} cd "${DN_ORIGIN}"
 ${MYEXEC} makepkg_tarpkg
 
 if [ "${FLG_CLEAN_AFTER}" = "1" ]; then
-    rm -rf ${srcdir}/*
+    echo "[DBG] remove source dir '${srcdir}' ..." >> "${FN_LOG}"
+    ${MYEXEC} rm -rf ${srcdir}/*
 fi
 
 exit 0
