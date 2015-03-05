@@ -445,6 +445,26 @@ install_package () {
     echo "ok"
 }
 
+install_arch_yaourt () {
+    wget https://aur.archlinux.org/packages/ya/yaourt/yaourt.tar.gz
+
+    pacman -Qi package-query
+    if [ "$?" = "0" ]; then
+        wget https://aur.archlinux.org/packages/pa/package-query/package-query.tar.gz
+        tar -xf package-query.tar.gz \
+            && cd package-query \
+            && makepkg -Asf \
+            && sudo pacman -U ./package-query-*.xz \
+            && cd ..
+    fi
+
+    tar -xf yaourt.tar.gz \
+        && cd yaourt \
+        && makepkg -Asf \
+        && sudo pacman -U ./yaourt-*.xz \
+        && cd ..
+}
+
 install_package_alt () {
     PARAM_NAME=$*
     INSTALLER=`ospkgget $OSTYPE apt-get`
@@ -460,6 +480,13 @@ install_package_alt () {
         ;;
 
     Arch)
+        if [ ! -x "$(which yaourt)" ]; then
+            install_arch_yaourt >> "${FN_LOG}"
+        fi
+        if [ ! -x "$(which yaourt)" ]; then
+            echo "Error in get yaourt!" >> "${FN_LOG}"
+            exit 1
+        fi
         INSTALLER="yaourt"
         INST_OPTS=""
         ;;
