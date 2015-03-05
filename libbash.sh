@@ -12,7 +12,7 @@
 echo $PATH | grep "~/bin"
 if [ ! "$?" = "0" ]; then
     #echo 'PATH=~/bin/:$PATH' >> ~/.bashrc
-    export PATH=~/bin:$PATH
+    export PATH=~/bin:/sbin/:/usr/sbin/:$PATH
 fi
 
 if [ "${FN_LOG}" = "" ]; then
