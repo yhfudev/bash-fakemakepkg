@@ -389,9 +389,13 @@ install_package () {
 
     echo "try to install packages: ${PKGLST}"
     sudo $INSTALLER ${INST_OPTS} ${PKGLST}
+    if [ "$?" = "0" ]; then
+        return 1
+    fi
     if [ "${FLG_GAWK_RH}" = "1" ]; then
         patch_centos_gawk
     fi
+    return 0
 }
 
 # check if command is not exist, then install the package
