@@ -71,17 +71,27 @@ usage () {
   echo "${PARAM_NAME} [options]" >> "/dev/stderr"
   echo "" >> "/dev/stderr"
   echo "Options:" >> "/dev/stderr"
-  echo -e "\t--help            Print this message" >> "/dev/stderr"
-  echo -e "\t--config <file>   read in user's config file" >> "/dev/stderr"
+  echo -e "\t--help           Print this message" >> "/dev/stderr"
+  echo -e "\t-c, --clean      Clean up work files after build" >> "/dev/stderr"
+  echo -e "\t-C, --cleanbuild Remove \$srcdir/ dir before building the package" >> "/dev/stderr"
+  echo -e "\t--config <file>  Use an alternate config file (instead of '/etc/makepkg.conf')" >> "/dev/stderr"
   echo "" >> "/dev/stderr"
 }
 
+FLG_CLEAN_BEFORE=0
+FLG_CLEAN_AFTER=0
 FN_PKGBUILD="PKGBUILD"
 while [ ! "$1" = "" ]; do
     case "$1" in
     --help|-h)
         usage "$0"
         exit 0
+        ;;
+    --cleanbuild|-C)
+        FLG_CLEAN_BEFORE=1
+        ;;
+    --clean|-c)
+        FLG_CLEAN_AFTER=1
         ;;
     --config)
         shift
@@ -129,6 +139,10 @@ ${MYEXEC} mkdir -p "${pkgdir}"
 check_valid_path "${pkgdir}"
 ${MYEXEC} rm -rf "${pkgdir}"
 
+if [ "${FLG_CLEAN_BEFORE}" = "1" ]; then
+    rm -rf ${srcdir}/*
+fi
+
 checkout_sources
 
 # call user's function
@@ -153,5 +167,9 @@ fi
 
 ${MYEXEC} cd "${DN_ORIGIN}"
 ${MYEXEC} makepkg_tarpkg
+
+if [ "${FLG_CLEAN_AFTER}" = "1" ]; then
+    rm -rf ${srcdir}/*
+fi
 
 exit 0
