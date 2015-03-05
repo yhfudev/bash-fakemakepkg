@@ -321,16 +321,20 @@ check_installed_package() {
     PARAM_NAME=$*
     #INSTALLER=`ospkgget $OSTYPE apt-get`
     EXEC_CHKPKG="dpkg -s"
+    EXEC_CHKGRP="dpkg -s"
     case "$OSTYPE" in
     RedHat)
         EXEC_CHKPKG="rpm -qi"
+        EXEC_CHKGRP="rpm -qi"
         ;;
 
     Arch)
         EXEC_CHKPKG="pacman -Qi"
+        EXEC_CHKGRP="pacman -Qg"
         ;;
     Gentoo)
         EXEC_CHKPKG="emerge -pv" # and emerge -S 
+        EXEC_CHKGRP="emerge -pv" # and emerge -S 
         ;;
     *)
         echo "[ERR] Not supported OS: $OSTYPE"
@@ -347,9 +351,12 @@ check_installed_package() {
         echo "check arch pkg: ${PKG}" >> "${FN_LOG}"
         ${EXEC_CHKPKG} ${PKG} > /dev/null
         if [ ! "$?" = "0" ]; then
-            echo "fail"
-            echo "check arch pkg: ${PKG} return fail!" >> "${FN_LOG}"
-            return
+            ${EXEC_CHKGRP} ${PKG} > /dev/null
+            if [ ! "$?" = "0" ]; then
+                echo "fail"
+                echo "check arch pkg: ${PKG} return fail!" >> "${FN_LOG}"
+                return
+            fi
         fi
     done
     echo "check arch pkg: ${PARAM_NAME} return ok!" >> "${FN_LOG}"
