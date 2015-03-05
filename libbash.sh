@@ -401,7 +401,7 @@ install_package () {
     INST_OPTS=""
     case "$OSTYPE" in
     Debian)
-        INST_OPTS="install -y"
+        INST_OPTS="install -y --force-yes"
         ;;
 
     RedHat)
@@ -445,7 +445,7 @@ install_package_alt () {
     INST_OPTS=""
     case "$OSTYPE" in
     Debian)
-        INST_OPTS="install -y"
+        INST_OPTS="install -y --force-yes"
         ;;
 
     RedHat)
