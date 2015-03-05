@@ -215,21 +215,21 @@ ospkgset python-mysqldb     MySQL-python        mysql-python
 # WARNING: the CentOS boot program depend the awk, and if the system upgrade the gawk again,
 #   new installed gawk will not support 
 patch_centos_gawk () {
-    yum -y install rpmdevtools readline-devel #libsigsegv-devel
-    yum -y install gcc byacc
-    rpmdev-setuptree
+    yum -y install rpmdevtools readline-devel  >> "${FN_LOG}" #libsigsegv-devel
+    yum -y install gcc byacc >> "${FN_LOG}"
+    rpmdev-setuptree >> "${FN_LOG}"
 
     #FILELIST="gawk.spec gawk-3.1.8.tar.bz2 gawk-3.1.8-double-free-wstptr.patch gawk-3.1.8-syntax.patch"
     #URL="http://archive.fedoraproject.org/pub/archive/fedora/linux/updates/14/SRPMS/gawk-3.1.8-3.fc14.src.rpm"
     FILELIST="gawk.spec gawk-4.0.1.tar.gz"
     URL="http://archive.fedoraproject.org/pub/archive/fedora/linux/updates/17/SRPMS/gawk-4.0.1-1.fc17.src.rpm"
-    cd ~/rpmbuild/SOURCES/; rm -f ${FILELIST}; cd - ; rm -f ${FILELIST}
-    wget -c "${URL}" -O ~/rpmbuild/SRPMS/$(basename "${URL}")
-    rpm2cpio ~/rpmbuild/SRPMS/$(basename "${URL}") | cpio -div
-    mv ${FILELIST} ~/rpmbuild/SOURCES/
-    sed -i 's@configure @configure --enable-switch --disable-libsigsegv @g' ~/rpmbuild/SOURCES/$(echo "${FILELIST}" | awk '{print $1}')
-    sed -i 's@--with-libsigsegv-prefix=[^ ]*@@g' ~/rpmbuild/SOURCES/$(echo "${FILELIST}" | awk '{print $1}')
-    sed -i 's@Conflicts: filesystem@#Conflicts: filesystem@g' ~/rpmbuild/SOURCES/$(echo "${FILELIST}" | awk '{print $1}')
+    cd ~/rpmbuild/SOURCES/; rm -f ${FILELIST} >> "${FN_LOG}"; cd - ; rm -f ${FILELIST} >> "${FN_LOG}"
+    wget -c "${URL}" -O ~/rpmbuild/SRPMS/$(basename "${URL}") >> "${FN_LOG}"
+    rpm2cpio ~/rpmbuild/SRPMS/$(basename "${URL}") | cpio -div >> "${FN_LOG}"
+    mv ${FILELIST} ~/rpmbuild/SOURCES/ >> "${FN_LOG}"
+    sed -i 's@configure @configure --enable-switch --disable-libsigsegv @g' ~/rpmbuild/SOURCES/$(echo "${FILELIST}" | awk '{print $1}') >> "${FN_LOG}"
+    sed -i 's@--with-libsigsegv-prefix=[^ ]*@@g' ~/rpmbuild/SOURCES/$(echo "${FILELIST}" | awk '{print $1}') >> "${FN_LOG}"
+    sed -i 's@Conflicts: filesystem@#Conflicts: filesystem@g' ~/rpmbuild/SOURCES/$(echo "${FILELIST}" | awk '{print $1}') >> "${FN_LOG}"
 
     # we don't install gawk to system's directory
     # instead, we install the new gawk in ~/bin
@@ -238,11 +238,11 @@ patch_centos_gawk () {
     #sudo rpm -U --force ~/rpmbuild/RPMS/$(uname -p)/gawk-4.0.1-1.el6.$(uname -p).rpm
     #ln -s $(which gawk) /bin/gawk
     #ln -s $(which gawk) /bin/awk
-    rpmbuild -bb ~/rpmbuild/SOURCES/$(echo "${FILELIST}" | awk '{print $1}')
-    mkdir -p ~/bin/
-    cp ~/rpmbuild/BUILD/gawk-4.0.1/gawk ~/bin/
-    ln -s ~/bin/gawk ~/bin/awk
-    rm -rf ~/rpmbuild/BUILD/gawk-4.0.1/
+    rpmbuild -bb ~/rpmbuild/SOURCES/$(echo "${FILELIST}" | awk '{print $1}') >> "${FN_LOG}"
+    mkdir -p ~/bin/ >> "${FN_LOG}"
+    cp ~/rpmbuild/BUILD/gawk-4.0.1/gawk ~/bin/ >> "${FN_LOG}"
+    ln -s ~/bin/gawk ~/bin/awk >> "${FN_LOG}"
+    rm -rf ~/rpmbuild/BUILD/gawk-4.0.1/ >> "${FN_LOG}"
 }
 
 # 对于非 x86 平台，如arm等，使用下载支持 x86 启动的syslinux
@@ -269,6 +269,46 @@ download_extract_2tmp_syslinux () {
     tar -xf "${FN_SYSLI}"
     cd -
 }
+
+check_available_package() {
+    PARAM_NAME=$*
+    #INSTALLER=`ospkgget $OSTYPE apt-get`
+    EXEC_CHKPKG="dpkg -s"
+    case "$OSTYPE" in
+    RedHat)
+        EXEC_CHKPKG="yum info"
+        ;;
+
+    Arch)
+        EXEC_CHKPKG="pacman -Si"
+        ;;
+    Gentoo)
+        EXEC_CHKPKG="emerge -S" # and emerge -S 
+        ;;
+    *)
+        echo "[ERR] Not supported OS: $OSTYPE"
+        exit 0
+        ;;
+    esac
+    #echo "enter arch for pkgs: ${PARAM_NAME}" >> "${FN_LOG}"
+    for i in $PARAM_NAME ; do
+        #echo "enter loop arch for pkg: ${i}" >> "${FN_LOG}"
+        PKG=$(ospkgget $OSTYPE $i)
+        if [ "${PKG}" = "" ]; then
+            PKG="$i"
+        fi
+        echo "check arch pkg: ${PKG}" >> "${FN_LOG}"
+        ${EXEC_CHKPKG} ${PKG} > /dev/null
+        if [ ! "$?" = "0" ]; then
+            echo "fail"
+            echo "check arch pkg: ${PKG} return fail!" >> "${FN_LOG}"
+            return
+        fi
+    done
+    echo "check arch pkg: ${PARAM_NAME} return ok!" >> "${FN_LOG}"
+    echo "ok"
+}
+
 
 check_installed_package() {
     PARAM_NAME=$*
@@ -322,11 +362,11 @@ install_package () {
         if [ "${PKG}" = "" ]; then
             PKG="$i"
         fi
-        echo "check package: $PKG($i)"
+        echo "check package: $PKG($i)" >> "${FN_LOG}"
         if [ "$i" = "gawk" ]; then
             if [ "$OSTYPE" = "RedHat" ]; then
-                echo "[DBG] patch gawk to support 'switch'"
-                echo | awk '{a = 1; switch(a) { case 0: break; } }'
+                echo "[DBG] patch gawk to support 'switch'" >> "${FN_LOG}"
+                echo | awk '{a = 1; switch(a) { case 0: break; } }' > /dev/null
                 if [ $? = 1 ]; then
                     FLG_GAWK_RH=1
                     PKG="rpmdevtools libsigsegv-devel readline-devel"
@@ -334,22 +374,22 @@ install_package () {
             fi
         fi
 
-        echo "[DBG] OSTYPE = $OSTYPE"
+        echo "[DBG] OSTYPE = $OSTYPE" >> "${FN_LOG}"
         if [ "$OSTYPE" = "Arch" ]; then
             if [ "$i" = "portmap" ]; then
-                echo "[DBG] Ignore $i"
+                echo "[DBG] Ignore $i" >> "${FN_LOG}"
                 PKG=""
             fi
             if [ "$i" = "syslinux" ]; then
                 MACH=$(uname -m)
                 case "$MACH" in
                 x86_64|i386|i686)
-                    echo "[DBG] use standard method"
+                    echo "[DBG] use standard method" >> "${FN_LOG}"
                     ;;
 
                 *)
-                    echo "[DBG] Arch $MACH yet another installation of $i"
-                    echo "[DBG] Download package for $MACH"
+                    echo "[DBG] Arch $MACH yet another installation of $i" >> "${FN_LOG}"
+                    echo "[DBG] Download package for $MACH" >> "${FN_LOG}"
                     download_extract_2tmp_syslinux
                     ;;
                 esac
@@ -371,9 +411,9 @@ install_package () {
     Arch)
         INST_OPTS="-S"
         # install loop module
-        lsmod | grep loop
+        lsmod | grep loop > /dev/null
         if [ "$?" != "0" ]; then
-            modprobe loop
+            modprobe loop > /dev/null
 
             grep -Hrn loop /etc/modules-load.d/
             if [ "$?" != "0" ]; then
@@ -382,21 +422,60 @@ install_package () {
         fi
         ;;
     *)
-        echo "[ERR] Not supported OS: $OSTYPE"
+        echo "[ERR] Not supported OS: $OSTYPE" >> "${FN_LOG}"
         exit 0
         ;;
     esac
 
-    echo "try to install packages: ${PKGLST}"
-    sudo $INSTALLER ${INST_OPTS} ${PKGLST}
-    if [ "$?" = "0" ]; then
-        return 1
+    echo "try to install packages: ${PKGLST}" >> "${FN_LOG}"
+    sudo $INSTALLER ${INST_OPTS} ${PKGLST} >> "${FN_LOG}"
+    if [ ! "$?" = "0" ]; then
+        echo "fail"
     fi
     if [ "${FLG_GAWK_RH}" = "1" ]; then
         patch_centos_gawk
     fi
-    return 0
+    echo "ok"
 }
+
+install_package_alt () {
+    PARAM_NAME=$*
+    INSTALLER=`ospkgget $OSTYPE apt-get`
+
+    INST_OPTS=""
+    case "$OSTYPE" in
+    Debian)
+        INST_OPTS="install -y"
+        ;;
+
+    RedHat)
+        INST_OPTS="install -y"
+        ;;
+
+    Arch)
+        INSTALLER="yaourt"
+        INST_OPTS=""
+        ;;
+    *)
+        echo "[ERR] Not supported OS: $OSTYPE" >> "${FN_LOG}"
+        exit 0
+        ;;
+    esac
+    for i in $PARAM_NAME ; do
+        PKG=$(ospkgget $OSTYPE $i)
+        if [ "${PKG}" = "" ]; then
+            PKG="$i"
+        fi
+        echo "try to install packages: ${PKG}" >> "${FN_LOG}"
+        sudo $INSTALLER ${INST_OPTS} ${PKG} >> "${FN_LOG}"
+        if [ ! "$?" = "0" ]; then
+            echo "fail"
+            return
+        fi
+    done
+    echo "ok"
+}
+
 
 # check if command is not exist, then install the package
 check_install_package () {

@@ -503,6 +503,7 @@ prepare_env() {
 
 check_makedepends() {
     echo "Checking runtime dependencies..."
+    LIST_ALT=
     LIST_MISS=
     for i in ${makedepends[*]} ; do
         PKG1x5=$(p2d_get "Debian" "$i")
@@ -512,13 +513,26 @@ check_makedepends() {
         RET=$(check_installed_package ${PKG1x5})
         #echo "Checking package '$i(${PKG1x5})', return ${RET}"
         if [ ! "$RET" = "ok" ]; then
-            LIST_MISS="${LIST_MISS} ${PKG1x5}"
+            RET=$(check_available_package ${PKG1x5})
+            if [ ! "$RET" = "ok" ]; then
+                LIST_ALT="${LIST_ALT} ${PKG1x5}"
+            else
+                LIST_MISS="${LIST_MISS} ${PKG1x5}"
+            fi
         fi
     done
     if [ ! "${LIST_MISS}" = "" ]; then
         echo "Installing missing dependencies..."
-        ${MYEXEC} install_package ${LIST_MISS}
-        if [ ! "$?" = "0" ]; then
+        RET=$(${MYEXEC} install_package ${LIST_MISS})
+        if [ ! "$RET" = "ok" ]; then
+            echo "Error in install packages"
+            exit 1
+        fi
+    fi
+    if [ ! "${LIST_ALT}" = "" ]; then
+        echo "Installing missing dependencies with 3rd tools..."
+        RET=$(${MYEXEC} install_package_alt ${LIST_ALT})
+        if [ ! "$RET" = "ok" ]; then
             echo "Error in install packages"
             exit 1
         fi
