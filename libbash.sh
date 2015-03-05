@@ -274,16 +274,20 @@ check_available_package() {
     PARAM_NAME=$*
     #INSTALLER=`ospkgget $OSTYPE apt-get`
     EXEC_CHKPKG="dpkg -s"
+    EXEC_CHKGRP="dpkg -s"
     case "$OSTYPE" in
     RedHat)
         EXEC_CHKPKG="yum info"
+        EXEC_CHKGRP="yum info"
         ;;
 
     Arch)
         EXEC_CHKPKG="pacman -Si"
+        EXEC_CHKGRP="pacman -Sg"
         ;;
     Gentoo)
-        EXEC_CHKPKG="emerge -S" # and emerge -S 
+        EXEC_CHKPKG="emerge -S"
+        EXEC_CHKGRP="emerge -S"
         ;;
     *)
         echo "[ERR] Not supported OS: $OSTYPE"
@@ -300,9 +304,12 @@ check_available_package() {
         echo "check arch pkg: ${PKG}" >> "${FN_LOG}"
         ${EXEC_CHKPKG} ${PKG} > /dev/null
         if [ ! "$?" = "0" ]; then
-            echo "fail"
-            echo "check arch pkg: ${PKG} return fail!" >> "${FN_LOG}"
-            return
+            ${EXEC_CHKGRP} ${PKG} > /dev/null
+            if [ ! "$?" = "0" ]; then
+                echo "fail"
+                echo "check arch pkg: ${PKG} return fail!" >> "${FN_LOG}"
+                return
+            fi
         fi
     done
     echo "check arch pkg: ${PARAM_NAME} return ok!" >> "${FN_LOG}"
