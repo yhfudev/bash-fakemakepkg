@@ -523,7 +523,7 @@ check_makedepends() {
     done
     if [ ! "${LIST_MISS}" = "" ]; then
         echo "Installing missing dependencies..."
-        RET=$(${MYEXEC} install_package ${LIST_MISS})
+        RET=$(${MYEXEC} install_package ${LIST_MISS} >> "${FN_LOG}")
         if [ ! "$RET" = "ok" ]; then
             echo "Error return: ${RET}"
             echo "Error in install packages: ${LIST_MISS}"
@@ -532,7 +532,7 @@ check_makedepends() {
     fi
     if [ ! "${LIST_ALT}" = "" ]; then
         echo "Installing missing dependencies with 3rd tools..."
-        RET=$(${MYEXEC} install_package_alt ${LIST_ALT})
+        RET=$(${MYEXEC} install_package_alt ${LIST_ALT} >> "${FN_LOG}")
         if [ ! "$RET" = "ok" ]; then
             echo "Error return: ${RET}"
             echo "Error in install packages: ${LIST_ALT}"
