@@ -448,8 +448,8 @@ install_package () {
 install_arch_yaourt () {
     wget https://aur.archlinux.org/packages/ya/yaourt/yaourt.tar.gz
 
-    pacman -Qi package-query
-    if [ "$?" = "0" ]; then
+    pacman -Qi package-query >> /dev/null
+    if [ ! "$?" = "0" ]; then
         wget https://aur.archlinux.org/packages/pa/package-query/package-query.tar.gz
         tar -xf package-query.tar.gz \
             && cd package-query \
