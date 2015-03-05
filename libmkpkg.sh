@@ -525,6 +525,7 @@ check_makedepends() {
         echo "Installing missing dependencies..."
         RET=$(${MYEXEC} install_package ${LIST_MISS})
         if [ ! "$RET" = "ok" ]; then
+            echo "Error return: ${RET}"
             echo "Error in install packages: ${LIST_MISS}"
             exit 1
         fi
@@ -533,6 +534,7 @@ check_makedepends() {
         echo "Installing missing dependencies with 3rd tools..."
         RET=$(${MYEXEC} install_package_alt ${LIST_ALT})
         if [ ! "$RET" = "ok" ]; then
+            echo "Error return: ${RET}"
             echo "Error in install packages: ${LIST_ALT}"
             exit 1
         fi
