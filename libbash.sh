@@ -166,6 +166,7 @@ ospkgset kpartx             kpartx              multipath-tools
 ospkgset lib32stdc++6       libstdc++.i686      lib32-libstdc++5
 #                           libstdc++.so.6
 ospkgset lib32z1            zlib.i686           lib32-zlib
+ospkgset qemu-user-static   qemu-user-static    qemu-user-static-exp
 
 ospkgset apache2            httpd               apache
 #ospkgset apache2-mpm-prefork
