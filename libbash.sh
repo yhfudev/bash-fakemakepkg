@@ -174,6 +174,9 @@ ospkgset pixz               xz                  pixz
 ospkgset qemu-user-static   qemu-user           qemu-user-static-exp
 #ospkgset qemu qemu qemu # gentoo: app-emulation/qemu
 
+# fedora, qemu provides qemu.binfmt, and the kernel already contains binfmt support
+ospkgset binfmt-support     qemu                binfmt-support
+
 ospkgset apache2            httpd               apache
 #ospkgset apache2-mpm-prefork
 #ospkgset apache2-utils
