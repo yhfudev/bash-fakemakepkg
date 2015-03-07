@@ -439,7 +439,7 @@ install_package () {
         ;;
 
     RedHat)
-        INST_OPTS="install -y"
+        INST_OPTS="groupinstall -y"
         ;;
 
     Arch)
@@ -527,8 +527,8 @@ install_package_alt () {
         if [ "${PKG}" = "" ]; then
             PKG="$i"
         fi
-        echo "try to install packages: ${PKG}" >> "${FN_LOG}"
-        sudo $INSTALLER ${INST_OPTS} ${PKG} >> "${FN_LOG}"
+        echo "try to install 3rd packages: ${PKG}" >> "${FN_LOG}"
+        sudo $INSTALLER ${INST_OPTS} "${PKG}" >> "${FN_LOG}"
         if [ ! "$?" = "0" ]; then
             echo "fail"
             return
