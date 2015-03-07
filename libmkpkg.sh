@@ -201,7 +201,7 @@ check_xxxsum_ok () {
         
         if [[ ${#sha1sums[*]} > ${PARAM_CNT} ]]; then
             if [ ! "${sha1sums[${PARAM_CNT}]}" = "SKIP" ]; then
-                SHASUM=$(shasum "${PATH_FILE}" | awk '{print $1}')
+                SHASUM=$(sha1sum "${PATH_FILE}" | awk '{print $1}')
                 if [ ! "${SHASUM}" = "${sha1sums[${PARAM_CNT}]}" ]; then
                     FLG_ERROR=1
                     echo "[DBG] file sha1sums error: ${PATH_FILE}" >> "${FN_LOG}"
