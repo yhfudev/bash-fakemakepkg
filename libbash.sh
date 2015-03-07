@@ -279,6 +279,17 @@ download_extract_2tmp_syslinux () {
     cd -
 }
 
+# a wrap for "yum groupinfo" to return correct value
+yum_groupinfo() {
+    PARAM_PKG=$1
+    yum groupinfo "${PARAM_PKG}" 2>&1 | grep "Warning: Group" | grep "not exist." > /dev/null
+    if [ "$?" = "0" ]; then
+        return 1
+    fi
+    return 0
+}
+
+
 check_available_package() {
     PARAM_NAME=$*
     #INSTALLER=`ospkgget $OSTYPE apt-get`
@@ -287,7 +298,7 @@ check_available_package() {
     case "$OSTYPE" in
     RedHat)
         EXEC_CHKPKG="yum info"
-        EXEC_CHKGRP="yum groupinfo"
+        EXEC_CHKGRP="yum_groupinfo"
         ;;
 
     Arch)
@@ -334,7 +345,7 @@ check_installed_package() {
     case "$OSTYPE" in
     RedHat)
         EXEC_CHKPKG="rpm -qi"
-        EXEC_CHKGRP="yum groupinfo"
+        EXEC_CHKGRP="yum_groupinfo"
         ;;
 
     Arch)
