@@ -147,7 +147,7 @@ ospkgset apt-file           yum                 pkgfile
 ospkgset u-boot-tools       uboot-tools         uboot-tools
 ospkgset mtd-utils          mtd-utils           mtd-utils
 ospkgset build-essential    build-essential     base-devel
-ospkgset devscripts         ''                  abs
+ospkgset devscripts         rpmdevtools         abs
 ospkgset lsb-release        redhat-lsb-core     redhat-lsb-core
 ospkgset openssh-client     openssh-clients     openssh-clients
 ospkgset parted             parted              parted
@@ -161,12 +161,15 @@ ospkgset nfs-kernel-server  nfs-utils           nfs-utils
 ospkgset nfs-common         nfs-utils           nfs-utils
 ospkgset bind9              bind                bind
 ospkgset portmap            portmap             ""
-ospkgset libncurses-dev     libncurses-dev      ncurses
+ospkgset libncurses-dev     ncurses-devel       ncurses
 ospkgset kpartx             kpartx              multipath-tools
 ospkgset lib32stdc++6       libstdc++.i686      lib32-libstdc++5
 #                           libstdc++.so.6
 ospkgset lib32z1            zlib.i686           lib32-zlib
-ospkgset qemu-user-static   qemu-user-static    qemu-user-static-exp
+
+# fix me: fedora has no equilant to qemu-user-static!  qemu-arm-static
+ospkgset qemu-user-static   qemu-user           qemu-user-static-exp
+#ospkgset qemu qemu qemu # gentoo: app-emulation/qemu
 
 ospkgset apache2            httpd               apache
 #ospkgset apache2-mpm-prefork
