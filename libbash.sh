@@ -146,7 +146,7 @@ ospkgset apt-get            yum                 pacman              opkg
 ospkgset apt-file           yum                 pkgfile
 ospkgset u-boot-tools       uboot-tools         uboot-tools
 ospkgset mtd-utils          mtd-utils           mtd-utils
-ospkgset build-essential    build-essential     base-devel
+ospkgset build-essential    'Development Tools' base-devel
 ospkgset devscripts         rpmdevtools         abs
 ospkgset lsb-release        redhat-lsb-core     redhat-lsb-core
 ospkgset openssh-client     openssh-clients     openssh-clients
@@ -166,6 +166,9 @@ ospkgset kpartx             kpartx              multipath-tools
 ospkgset lib32stdc++6       libstdc++.i686      lib32-libstdc++5
 #                           libstdc++.so.6
 ospkgset lib32z1            zlib.i686           lib32-zlib
+
+# fixme: fedora: pixz?
+ospkgset pixz               xz                  pixz
 
 # fix me: fedora has no equilant to qemu-user-static!  qemu-arm-static
 ospkgset qemu-user-static   qemu-user           qemu-user-static-exp
@@ -284,7 +287,7 @@ check_available_package() {
     case "$OSTYPE" in
     RedHat)
         EXEC_CHKPKG="yum info"
-        EXEC_CHKGRP="yum info"
+        EXEC_CHKGRP="yum groupinfo"
         ;;
 
     Arch)
@@ -308,9 +311,9 @@ check_available_package() {
             PKG="$i"
         fi
         echo "check arch pkg: ${PKG}" >> "${FN_LOG}"
-        ${EXEC_CHKPKG} ${PKG} > /dev/null
+        ${EXEC_CHKPKG} "${PKG}" > /dev/null
         if [ ! "$?" = "0" ]; then
-            ${EXEC_CHKGRP} ${PKG} > /dev/null
+            ${EXEC_CHKGRP} "${PKG}" > /dev/null
             if [ ! "$?" = "0" ]; then
                 echo "fail"
                 echo "check arch pkg: ${PKG} return fail!" >> "${FN_LOG}"
@@ -331,7 +334,7 @@ check_installed_package() {
     case "$OSTYPE" in
     RedHat)
         EXEC_CHKPKG="rpm -qi"
-        EXEC_CHKGRP="rpm -qi"
+        EXEC_CHKGRP="yum groupinfo"
         ;;
 
     Arch)
@@ -355,9 +358,9 @@ check_installed_package() {
             PKG="$i"
         fi
         echo "check arch pkg: ${PKG}" >> "${FN_LOG}"
-        ${EXEC_CHKPKG} ${PKG} > /dev/null
+        ${EXEC_CHKPKG} "${PKG}" > /dev/null
         if [ ! "$?" = "0" ]; then
-            ${EXEC_CHKGRP} ${PKG} > /dev/null
+            ${EXEC_CHKGRP} "${PKG}" > /dev/null
             if [ ! "$?" = "0" ]; then
                 echo "fail"
                 echo "check arch pkg: ${PKG} return fail!" >> "${FN_LOG}"
