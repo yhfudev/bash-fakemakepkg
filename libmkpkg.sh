@@ -69,6 +69,8 @@ p2d_set lib32-libstdc++5    lib32stdc++6
 p2d_set lib32-zlib          lib32z1
 #debian: lib32gcc1 libc6-i386
 
+p2d_set uboot-tools         u-boot-tools
+
 #####################################################################
 
 #source=(
