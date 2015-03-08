@@ -348,7 +348,7 @@ check_available_package() {
 yum_groupcheck() {
     PARAM_PKG=$1
     yum_groupinfo "${PARAM_PKG}"
-    if [ "$?" = "0" ]; then
+    if [ ! "$?" = "0" ]; then
         mkdir /a/b/c/d/e/f/
     else
         yes no | yum groupupdate "${PARAM_PKG}" 2>&1 | grep -i "Dependent packages" > /dev/null
