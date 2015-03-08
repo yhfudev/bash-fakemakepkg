@@ -347,13 +347,18 @@ check_available_package() {
 # check if a group installed
 yum_groupcheck() {
     PARAM_PKG=$1
-    yes no | yum groupupdate "${PARAM_PKG}" 2>&1 | grep -i "Dependent packages" > /dev/null
+    yum_groupinfo "${PARAM_PKG}"
     if [ "$?" = "0" ]; then
-        #return 1
         mkdir /a/b/c/d/e/f/
     else
-        #return 0
-        mkdir -p /tmp
+        yes no | yum groupupdate "${PARAM_PKG}" 2>&1 | grep -i "Dependent packages" > /dev/null
+        if [ "$?" = "0" ]; then
+            #return 1
+            mkdir /a/b/c/d/e/f/
+        else
+            #return 0
+            mkdir -p /tmp
+        fi
     fi
 }
 
