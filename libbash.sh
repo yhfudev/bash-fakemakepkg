@@ -328,18 +328,18 @@ check_available_package() {
         if [ "${PKG}" = "" ]; then
             PKG="$i"
         fi
-        echo "check arch pkg: ${PKG}" >> "${FN_LOG}"
+        echo "check available pkg: ${PKG}" >> "${FN_LOG}"
         ${EXEC_CHKPKG} "${PKG}" > /dev/null
         if [ ! "$?" = "0" ]; then
             ${EXEC_CHKGRP} "${PKG}" > /dev/null
             if [ ! "$?" = "0" ]; then
                 echo "fail"
-                echo "check arch pkg: ${PKG} return fail!" >> "${FN_LOG}"
+                echo "check available pkg: ${PKG} return fail!" >> "${FN_LOG}"
                 return
             fi
         fi
     done
-    echo "check arch pkg: ${PARAM_NAME} return ok!" >> "${FN_LOG}"
+    echo "check available pkg: ${PARAM_NAME} return ok!" >> "${FN_LOG}"
     echo "ok"
 }
 
@@ -393,18 +393,18 @@ check_installed_package() {
         if [ "${PKG}" = "" ]; then
             PKG="$i"
         fi
-        echo "check arch pkg: ${PKG}" >> "${FN_LOG}"
+        echo "check installed pkg: ${PKG}" >> "${FN_LOG}"
         ${EXEC_CHKPKG} "${PKG}" > /dev/null
         if [ ! "$?" = "0" ]; then
             ${EXEC_CHKGRP} "${PKG}" > /dev/null
             if [ ! "$?" = "0" ]; then
                 echo "fail"
-                echo "check arch pkg: ${PKG} return fail!" >> "${FN_LOG}"
+                echo "check installed pkg: ${PKG} return fail!" >> "${FN_LOG}"
                 return
             fi
         fi
     done
-    echo "check arch pkg: ${PARAM_NAME} return ok!" >> "${FN_LOG}"
+    echo "check installed pkg: ${PARAM_NAME} return ok!" >> "${FN_LOG}"
     echo "ok"
 }
 
