@@ -1,4 +1,5 @@
 #!/bin/bash
+VERSION=0.1
 
 DANGER_EXEC=
 MYEXEC=
@@ -18,10 +19,10 @@ if [ -f "/etc/makepkg.conf" ]; then
 fi
 
 if [ "${PKGDEST}" = "" ]; then
-    PKGDEST="${BASEDIR}/pkg/"
+    PKGDEST="${BASEDIR}/"
 fi
 if [ "${SRCDEST}" = "" ]; then
-    SRCDEST="${BASEDIR}/src/"
+    SRCDEST="${BASEDIR}/"
 fi
 if [ "${SRCPKGDEST}" = "" ]; then
     SRCPKGDEST="${BASEDIR}/"
@@ -249,8 +250,110 @@ check_xxxsum_ok () {
     fi
 }
 
+# 解包压缩文件
+extract_file () {
+  ARG_FN=$1
+  if [ -f "${ARG_FN}" ]; then
+    FN_CUR=`echo "${ARG_FN}" | awk -F/ '{name=$1; for (i=2; i <= NF; i ++) name=$i } END {print name}'`
+    FN_BASE=`echo "${FN_CUR}" | awk -F. '{name=$1; for (i=2; i < NF; i ++) name=name "." $i } END {print name}'`
+
+    case "${FN_CUR}" in
+    *.tar.Z)
+      echo "extract (tar) ${ARG_FN} ..."
+      #compress -dc file.tar.Z | tar xvf -
+      tar -xvZf "${ARG_FN}"
+      ;;
+    *.tar.gz)
+      echo "extract (tar) ${ARG_FN} ..."
+      tar -xzf "${ARG_FN}"
+      ;;
+    *.tar.bz2)
+      echo "extract (tar) ${ARG_FN} ..."
+      tar -xjf "${ARG_FN}"
+      ;;
+    *.tar.xz)
+      echo "extract (tar) ${ARG_FN} ..."
+      tar -xJf "${ARG_FN}"
+      ;;
+    *.cpio.gz)
+      echo "extract (cpio) ${ARG_FN} ..."
+      gzip -dc "${ARG_FN}" | cpio -div
+      ;;
+    *.gz)
+      echo "extract (gunzip) ${ARG_FN} ..."
+      gunzip -d -c "${ARG_FN}" > "${FN_BASE}.tmptmp"
+      mv "${FN_BASE}.tmptmp" "${FN_BASE}"
+      ;;
+    *.bz2)
+      echo "extract (bunzip2) ${ARG_FN} ..."
+      bunzip2 -d -c "${ARG_FN}" > "${FN_BASE}.tmptmp"
+      mv "${FN_BASE}.tmptmp" "${FN_BASE}"
+      ;;
+    *.xz)
+      echo "extract (bunzip2) ${ARG_FN} ..."
+      xz -d -c "${ARG_FN}" > "${FN_BASE}.tmptmp"
+      mv "${FN_BASE}.tmptmp" "${FN_BASE}"
+      ;;
+    *.rpm)
+      echo "extract (rpm) ${ARG_FN} ..."
+      rpm2cpio "${ARG_FN}" | cpio -div
+      ;;
+    *.rar)
+      echo "extract (unrar) ${ARG_FN} ..."
+      unrar x "${ARG_FN}"
+      ;;
+    *.zip)
+      echo "extract (unzip) ${ARG_FN} ..."
+      unzip "${ARG_FN}"
+      ;;
+    *.deb)
+      # ar xv "${ARG_FN}" && tar -xf data.tar.gz
+      echo "extract (dpkg) ${ARG_FN} ..."
+      dpkg -x "${ARG_FN}" .
+      ;;
+    *.dz)
+      echo "extract (dictzip) ${ARG_FN} ..."
+      dictzip -d -c "${ARG_FN}" > "${FN_BASE}.tmptmp"
+      mv "${FN_BASE}.tmptmp" "${FN_BASE}"
+      ;;
+    *.Z)
+      echo "extract (uncompress) ${ARG_FN} ..."
+      gunzip -d -c "${ARG_FN}" > "${FN_BASE}.tmptmp"
+      mv "${FN_BASE}.tmptmp" "${FN_BASE}"
+      ;;
+    *.a)
+      echo "extract (tar) ${ARG_FN} ..."
+      tar -xv "${FN_BASE}"
+      ;;
+    *.tgz)
+      echo "extract (tar) ${ARG_FN} ..."
+      tar -xzf "${ARG_FN}"
+      ;;
+    *.tbz)
+      echo "extract (tar) ${ARG_FN} ..."
+      tar -xjf "${ARG_FN}"
+      ;;
+    *.cgz)
+      echo "extract (cpio) ${ARG_FN} ..."
+      gzip -dc "${ARG_FN}" | cpio -div
+      ;;
+    *.cpio)
+      echo "extract (cpio) ${ARG_FN} ..."
+      cpio -div "${ARG_FN}"
+      ;;
+    *)
+      echo "SKIP ${ARG_FN}: unknown type ..."
+      ;;
+    esac
+  else
+    echo "Not found file: ${ARG_FN}"
+    return 1
+  fi
+  return 0;
+}
+
 down_sources() {
-    ${MYEXEC} mkdir -p "${SRCPKGDEST}"
+    ${MYEXEC} mkdir -p "${SRCDEST}"
     clear_detect_url
     CNT=0
     #for i in ${source[*]} ; do
@@ -274,7 +377,7 @@ down_sources() {
         case ${DECLNXOUT_TOOL} in
         git)
             DN0=$(pwd)
-            cd "${SRCPKGDEST}"
+            cd "${SRCDEST}"
             if [ -d "${DECLNXOUT_RENAME}" ]; then
                 cd "${DECLNXOUT_RENAME}"
                 echo "[DBG] try git fetch ..."
@@ -293,7 +396,7 @@ down_sources() {
             ;;
         hg)
             DN0=$(pwd)
-            cd "${SRCPKGDEST}"
+            cd "${SRCDEST}"
             if [ -d "${DECLNXOUT_RENAME}" ]; then
                 cd "${DECLNXOUT_RENAME}"
                 echo "[DBG] try hg pull ..."
@@ -307,7 +410,7 @@ down_sources() {
             ;;
         svn)
             DN0=$(pwd)
-            cd "${SRCPKGDEST}"
+            cd "${SRCDEST}"
             if [ -d "${DECLNXOUT_RENAME}" ]; then
                 cd "${DECLNXOUT_RENAME}"
                 echo "[DBG] try svn update ..."
@@ -326,7 +429,7 @@ down_sources() {
             fi
             if [ "${DECLNXOUT_TOOL}" = "wget" ]; then
 #echo "[DBG] check wget file: ${FNDOWN}" >> "${FN_LOG}"
-                FLG_OK=$(check_xxxsum_ok "${SRCPKGDEST}" "${FNDOWN}" ${CNT})
+                FLG_OK=$(check_xxxsum_ok "${SRCDEST}" "${FNDOWN}" ${CNT})
             else
 #echo "[DBG] check local file: ${FNDOWN}" >> "${FN_LOG}"
                 FLG_OK=$(check_xxxsum_ok "" "${FNDOWN}" ${CNT})
@@ -334,7 +437,7 @@ down_sources() {
             if [ "${FLG_OK}" = "false" ]; then
                 echo "[DBG] DECLNXOUT_RENAME=${DECLNXOUT_RENAME}, FNDOWN=${FNDOWN}" >> "${FN_LOG}"
                 if [ "${DECLNXOUT_TOOL}" = "wget" ]; then
-                    ${MYEXEC} wget -O "${SRCPKGDEST}/${FNDOWN}" "${DECLNXOUT_URL}"
+                    ${MYEXEC} wget -O "${SRCDEST}/${FNDOWN}" "${DECLNXOUT_URL}"
                 else
                     echo "Error in checking file: ${DECLNXOUT_RENAME}" >> "${FN_LOG}"
                     exit 1
@@ -344,7 +447,7 @@ down_sources() {
             ;;
         *)
             DN0=$(pwd)
-            cd "${SRCPKGDEST}"
+            cd "${SRCDEST}"
             echo "[DBG] try ${DECLNXOUT_TOOL} ${DECLNXOUT_URL} ${DECLNXOUT_RENAME} ..."
             ${MYEXEC} ${DECLNXOUT_TOOL} "${DECLNXOUT_URL}" ${DECLNXOUT_RENAME}
            cd ${DN0}
@@ -394,8 +497,8 @@ checkout_sources() {
                 ${MYEXEC} git pull
                 cd -
             else
-                echo "[DBG] try git clone ${SRCPKGDEST}/${FN_BASE} ${srcdir}/${FN_BASE} ..."
-                ${MYEXEC} git clone "${SRCPKGDEST}/${FN_BASE}" "${srcdir}/${FN_BASE}"
+                echo "[DBG] try git clone ${SRCDEST}/${FN_BASE} ${srcdir}/${FN_BASE} ..."
+                ${MYEXEC} git clone "${SRCDEST}/${FN_BASE}" "${srcdir}/${FN_BASE}"
                 #cd "${srcdir}/${FN_BASE}"
                 #${MYEXEC} echo "for branch in \$(git branch -a | grep remotes | grep -v HEAD | grep -v master); do git branch --track \${branch##*/} \$branch ; done" | ${MYEXEC} bash
                 #${MYEXEC} git fetch --all
@@ -411,8 +514,8 @@ checkout_sources() {
                 ${MYEXEC} hg revert --all
                 cd -
             else
-                echo "[DBG] try hg clone ${SRCPKGDEST}/${FN_BASE} ${srcdir}/${FN_BASE} ..."
-                ${MYEXEC} hg clone "${SRCPKGDEST}/${FN_BASE}" "${srcdir}/${FN_BASE}"
+                echo "[DBG] try hg clone ${SRCDEST}/${FN_BASE} ${srcdir}/${FN_BASE} ..."
+                ${MYEXEC} hg clone "${SRCDEST}/${FN_BASE}" "${srcdir}/${FN_BASE}"
             fi
             ;;
         svn)
@@ -422,24 +525,27 @@ checkout_sources() {
                 ${MYEXEC} svn revert --recursive
                 cd -
             else
-                echo "[DBG] try cp -rp ${SRCPKGDEST}/${FN_BASE} ${srcdir}/${FN_BASE} ..."
-                ${MYEXEC} cp -rp "${SRCPKGDEST}/${FN_BASE}" "${srcdir}/${FN_BASE}"
+                echo "[DBG] try cp -rp ${SRCDEST}/${FN_BASE} ${srcdir}/${FN_BASE} ..."
+                ${MYEXEC} cp -rp "${SRCDEST}/${FN_BASE}" "${srcdir}/${FN_BASE}"
             fi
             ;;
         wget)
             FNDOWN=$(echo "${DECLNXOUT_RENAME}" | awk -F? '{print $1}' | xargs basename)
             ${MYEXEC} rm -f "${srcdir}/${FNDOWN}"
-            ${MYEXEC} ln -s "${SRCPKGDEST}/${FNDOWN}" "${srcdir}/${FNDOWN}"
+            ${MYEXEC} ln -s "${SRCDEST}/${FNDOWN}" "${srcdir}/${FNDOWN}"
+            ( cd ${srcdir}/ && ${MYEXEC} extract_file "${srcdir}/${FNDOWN}" )
             ;;
         local)
             FNDOWN=$(echo "${DECLNXOUT_RENAME}" | awk -F? '{print $1}' | xargs basename)
             ${MYEXEC} rm -f "${srcdir}/${FNDOWN}"
             ${MYEXEC} ln -s "${BASEDIR}/${FNDOWN}" "${srcdir}/${FNDOWN}"
+            (cd ${srcdir}/ && ${MYEXEC} extract_file "${srcdir}/${FNDOWN}" )
             ;;
         *)
             DN0=$(pwd)
-            echo "[DBG] cp -rp ${SRCPKGDEST}/${FNDOWN} ${srcdir}/${FNDOWN} ..."
-            ${MYEXEC} cp -rp "${SRCPKGDEST}/${FNDOWN}" "${srcdir}/${FNDOWN}"
+            echo "[DBG] cp -rp ${SRCDEST}/${FNDOWN} ${srcdir}/${FNDOWN} ..."
+            ${MYEXEC} cp -rp "${SRCDEST}/${FNDOWN}" "${srcdir}/${FNDOWN}"
+            (cd ${srcdir}/ && ${MYEXEC} extract_file "${srcdir}/${FNDOWN}" )
             cd ${DN0}
             ;;
         esac
@@ -473,16 +579,54 @@ makepkg_tarpkg() {
         PREFIX="${pkgname}-$(pkgver)-${ARCH_OUT}"
     fi
     echo "[DBG] PREFIX=${PREFIX}"
+
+    MYPKGVER=${pkgver}
+    type pkgver > /dev/null
+    if [ "$?" = "0" ]; then
+        MYPKGVER=$(pkgver)
+    fi
+    MYPACKAGER=${PACKAGER}
+    if [ "${PACKAGER}" = "" ]; then
+        MYPACKAGER="Unknown Packager"
+    fi
+
     cd "${pkgdir}"
+    MYSIZE=$(du -sb | awk '{print $1}')
+
+    cat << EOF > .PKGINFO
+# Generated by libmkpkg.sh $VERSION
+# $(date)
+pkgname = ${pkgname}
+pkgver = ${MYPKGVER}
+pkgdesc = ${pkgdesc}
+url = ${url}
+builddate = $(date +%s)
+packager = ${MYPACKAGER}
+size = ${MYSIZE}
+arch = ${ARCH_OUT}
+license = ${license}
+backup = ${backup}
+EOF
+    for i in ${makedepends[*]} ; do
+        echo "makedepend = ${i}" >> .PKGINFO
+    done
+
+    if [ ! "${install}" = "" ]; then
+        cp "${BASEDIR}/${install}" ".INSTALL"
+    else
+        touch ".INSTALL"
+    fi
+    chmod 755 ".INSTALL"
+
     case ${PKGEXT} in
     *.tar.xz)
-        ${MYEXEC} tar -Jcf "${BASEDIR}/${PREFIX}.pkg.tar.xz" .
+        ${MYEXEC} tar -Jcf "${PKGDEST}/${PREFIX}.pkg.tar.xz" .
         ;;
     *.tar.bz2)
-        ${MYEXEC} tar -jcf "${BASEDIR}/${PREFIX}.pkg.tar.bz2" .
+        ${MYEXEC} tar -jcf "${PKGDEST}/${PREFIX}.pkg.tar.bz2" .
         ;;
     *)
-        ${MYEXEC} tar -zcf "${BASEDIR}/${PREFIX}.pkg.tar.gz" .
+        ${MYEXEC} tar -zcf "${PKGDEST}/${PREFIX}.pkg.tar.gz" .
         ;;
     esac
 }
@@ -495,16 +639,17 @@ setup_pkgdir () {
 }
 
 prepare_env() {
-    srcdir="${SRCDEST}/"
-    pkgdir="${PKGDEST}/${pkgname}"
+    srcdir="${BASEDIR}/src"
+    pkgdir="${BASEDIR}/pkg/${pkgname}"
 
     echo "[DBG] mkdir for required dir ..."
     echo "[DBG] srcdir=${srcdir}"
     echo "[DBG] pkgdir=${pkgdir}"
+    echo "[DBG] SRCDEST=${SRCDEST}"
     echo "[DBG] SRCPKGDEST=${SRCPKGDEST}"
     ${MYEXEC} mkdir -p "${srcdir}"
     ${MYEXEC} mkdir -p "${pkgdir}"
-    ${MYEXEC} mkdir -p "${SRCPKGDEST}"
+    ${MYEXEC} mkdir -p "${SRCDEST}"
 }
 
 check_makedepends() {

@@ -150,27 +150,27 @@ checkout_sources
 type prepare > /dev/null
 if [ "$?" = "0" ]; then
     echo "[DBG] call user prepare() ..." >> "${FN_LOG}"
-    ${MYEXEC} cd "${DN_ORIGIN}"
+    ${MYEXEC} cd "${srcdir}"
     ${MYEXEC} prepare
 fi
 
 type build > /dev/null
 if [ "$?" = "0" ]; then
     echo "[DBG] call user build() ..." >> "${FN_LOG}"
-    ${MYEXEC} cd "${DN_ORIGIN}"
+    ${MYEXEC} cd "${srcdir}"
     ${MYEXEC} build
 fi
 
 type package > /dev/null
 if [ "$?" = "0" ]; then
     echo "[DBG] call user package() ..." >> "${FN_LOG}"
-    ${MYEXEC} cd "${DN_ORIGIN}"
+    ${MYEXEC} cd "${srcdir}"
     ${MYEXEC} mkdir -p "${pkgdir}"
     ${MYEXEC} package
 fi
 
 echo "[DBG] make package ..." >> "${FN_LOG}"
-${MYEXEC} cd "${DN_ORIGIN}"
+${MYEXEC} cd "${srcdir}"
 ${MYEXEC} makepkg_tarpkg
 
 if [ "${FLG_CLEAN_AFTER}" = "1" ]; then
