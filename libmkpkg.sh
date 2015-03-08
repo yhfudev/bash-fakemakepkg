@@ -277,8 +277,8 @@ down_sources() {
             cd "${SRCPKGDEST}"
             if [ -d "${DECLNXOUT_RENAME}" ]; then
                 cd "${DECLNXOUT_RENAME}"
-                echo "[DBG] try git pull ..."
-                ${MYEXEC} git pull
+                echo "[DBG] try git fetch ..."
+                ${MYEXEC} git fetch --all
                 cd -
             else
                 echo "[DBG] try git clone --no-checkout ${DECLNXOUT_URL} ${DECLNXOUT_RENAME} ..."
@@ -286,7 +286,7 @@ down_sources() {
                 cd ${DECLNXOUT_RENAME}
                 ${MYEXEC} echo "for branch in \$(git branch -a | grep remotes | grep -v HEAD | grep -v master); do git branch --track \${branch##*/} \$branch ; done" | ${MYEXEC} bash
                 ${MYEXEC} git fetch --all
-                ${MYEXEC} git pull --all
+                #${MYEXEC} git pull --all
                 cd -
             fi
             cd ${DN0}
@@ -391,6 +391,7 @@ checkout_sources() {
                 echo "[DBG] try git 'revert' ..."
                 #${MYEXEC} git ls-files | ${MYEXEC} xargs git checkout --
                 ${MYEXEC} git status | grep "modified:" | awk '{print $2}' | ${MYEXEC} xargs git checkout --
+                ${MYEXEC} git pull
                 cd -
             else
                 echo "[DBG] try git clone ${SRCPKGDEST}/${FN_BASE} ${srcdir}/${FN_BASE} ..."
