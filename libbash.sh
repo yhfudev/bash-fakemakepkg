@@ -297,7 +297,6 @@ yum_groupinfo() {
     fi
 }
 
-
 check_available_package() {
     PARAM_NAME=$*
     #INSTALLER=`ospkgget $OSTYPE apt-get`
@@ -345,6 +344,19 @@ check_available_package() {
 }
 
 
+# check if a group installed
+yum_groupcheck() {
+    PARAM_PKG=$1
+    yes no | yum groupupdate "${PARAM_PKG}" 2>&1 | grep -i "Dependent packages" > /dev/null
+    if [ "$?" = "0" ]; then
+        #return 1
+        mkdir /a/b/c/d/e/f/
+    else
+        #return 0
+        mkdir -p /tmp
+    fi
+}
+
 check_installed_package() {
     PARAM_NAME=$*
     #INSTALLER=`ospkgget $OSTYPE apt-get`
@@ -353,7 +365,7 @@ check_installed_package() {
     case "$OSTYPE" in
     RedHat)
         EXEC_CHKPKG="rpm -qi"
-        EXEC_CHKGRP="yum_groupinfo"
+        EXEC_CHKGRP="yum_groupcheck"
         ;;
 
     Arch)
