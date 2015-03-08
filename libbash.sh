@@ -464,7 +464,7 @@ install_package () {
         ;;
 
     RedHat)
-        INST_OPTS="groupinstall -y"
+        INST_OPTS="install -y"
         ;;
 
     Arch)
@@ -528,7 +528,7 @@ install_package_alt () {
         ;;
 
     RedHat)
-        INST_OPTS="install -y"
+        INST_OPTS="groupinstall -y"
         ;;
 
     Arch)
