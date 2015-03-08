@@ -370,14 +370,18 @@ down_sources() {
             exit 0
         fi
         if [ "${DECLNXOUT_RENAME}" = "" ]; then
-            echo "Error: no target path" >> "${FN_LOG}"
-            exit 0
+            DECLNXOUT_RENAME=$(basename ${DECLNXOUT_URL})
         fi
         #echo "TOOL=${DECLNXOUT_TOOL}; URL=${DECLNXOUT_URL}; rename=${DECLNXOUT_RENAME}; " >> "${FN_LOG}"
         case ${DECLNXOUT_TOOL} in
         git)
             DN0=$(pwd)
             cd "${SRCDEST}"
+            case ${DECLNXOUT_RENAME} in
+            *.git)
+                DECLNXOUT_RENAME=$(echo "${DECLNXOUT_RENAME}" | ${EXEC_AWK} -F. '{b=$1; for (i=2; i < NF; i ++) {b=b "." $(i)}; print b}')
+                ;;
+            esac
             if [ -d "${DECLNXOUT_RENAME}" ]; then
                 cd "${DECLNXOUT_RENAME}"
                 echo "[DBG] try git fetch ..."
@@ -477,10 +481,9 @@ checkout_sources() {
             echo "Error: no url" >> "${FN_LOG}"
             exit 0
         fi
-        #if [ "${DECLNXOUT_RENAME}" = "" ]; then
-            #echo "Error: no target path" >> "${FN_LOG}"
-            #exit 0
-        #fi
+        if [ "${DECLNXOUT_RENAME}" = "" ]; then
+            DECLNXOUT_RENAME=$(basename ${DECLNXOUT_URL})
+        fi
         #echo "TOOL=${DECLNXOUT_TOOL}; URL=${DECLNXOUT_URL}; rename=${DECLNXOUT_RENAME}; " >> "${FN_LOG}"
         FN_BASE="${DECLNXOUT_RENAME}"
         if [ "${FN_BASE}" = "" ]; then
@@ -489,6 +492,11 @@ checkout_sources() {
         fi
         case ${DECLNXOUT_TOOL} in
         git)
+            case ${DECLNXOUT_RENAME} in
+            *.git)
+                DECLNXOUT_RENAME=$(echo "${DECLNXOUT_RENAME}" | ${EXEC_AWK} -F. '{b=$1; for (i=2; i < NF; i ++) {b=b "." $(i)}; print b}')
+                ;;
+            esac
             if [ -d "${srcdir}/${FN_BASE}" ]; then
                 cd "${srcdir}/${FN_BASE}"
                 echo "[DBG] try git 'revert' ..."
@@ -607,9 +615,14 @@ arch = ${ARCH_OUT}
 license = ${license}
 backup = ${backup}
 EOF
-    for i in ${makedepends[*]} ; do
-        echo "makedepend = ${i}" >> .PKGINFO
-    done
+    for i in ${makedepends[*]} ;    do echo "makedepend = ${i}" >> .PKGINFO ; done
+    for i in ${groups[*]} ;         do echo "groups = ${i}"     >> .PKGINFO ; done
+    for i in ${backup[*]} ;         do echo "backup = ${i}"     >> .PKGINFO ; done
+    for i in ${replaces[*]} ;       do echo "replaces = ${i}"   >> .PKGINFO ; done
+    for i in ${conflicts[*]} ;      do echo "conflicts = ${i}"  >> .PKGINFO ; done
+    for i in ${provides[*]} ;       do echo "provides = ${i}"   >> .PKGINFO ; done
+    for i in ${depends[*]} ;        do echo "depends = ${i}"    >> .PKGINFO ; done
+    for i in ${optdepends[*]} ;     do echo "optdepends = ${i}" >> .PKGINFO ; done
 
     if [ ! "${install}" = "" ]; then
         cp "${BASEDIR}/${install}" ".INSTALL"

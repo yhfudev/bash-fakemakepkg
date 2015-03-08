@@ -287,11 +287,14 @@ download_extract_2tmp_syslinux () {
 # a wrap for "yum groupinfo" to return correct value
 yum_groupinfo() {
     PARAM_PKG=$1
-    yum groupinfo "${PARAM_PKG}" 2>&1 | grep "Warning: Group" | grep "not exist." > /dev/null
+    yum groupinfo "${PARAM_PKG}" 2>&1 | grep -i "Warning: " | grep -i "not exist." > /dev/null
     if [ "$?" = "0" ]; then
-        return 1
+        #return 1
+        mkdir /a/b/c/d/e/f/
+    else
+        #return 0
+        mkdir -p /tmp
     fi
-    return 0
 }
 
 
