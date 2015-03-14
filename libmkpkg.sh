@@ -355,9 +355,11 @@ extract_file () {
 down_sources() {
     ${MYEXEC} mkdir -p "${SRCDEST}"
     clear_detect_url
-    CNT=0
+    CNT1=1
     #for i in ${source[*]} ; do
-    while [[ $CNT < ${#source[*]} ]] ; do
+    while [ $CNT1 -le ${#source[*]} ] ; do
+        # we have to use CNT, because we need use the index for sha1sum array!
+        CNT=$(( $CNT1 - 1 ))
         i=${source[$CNT]}
         echo "[DBG] down url=$i" >> "${FN_LOG}"
         detect_url "$i"
@@ -444,7 +446,6 @@ down_sources() {
                     ${MYEXEC} wget -O "${SRCDEST}/${FNDOWN}" "${DECLNXOUT_URL}"
                 else
                     echo "Error in checking file: ${DECLNXOUT_RENAME}" >> "${FN_LOG}"
-                    exit 1
                 fi
 #else echo "[DBG] check file ok: ${FNDOWN}" >> "${FN_LOG}"
             fi
@@ -457,7 +458,7 @@ down_sources() {
            cd ${DN0}
             ;;
         esac
-        CNT=$(( ${CNT} + 1 ))
+        CNT1=$(( ${CNT1} + 1 ))
     done
 }
 
