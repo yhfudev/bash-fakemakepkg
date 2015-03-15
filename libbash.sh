@@ -169,6 +169,8 @@ ospkgset lib32z1            zlib.i686           lib32-zlib
 
 ospkgset u-boot-tools       uboot-tools         uboot-tools
 
+ospkgset uuid-runtime       util-linux          util-linux
+
 # fixme: fedora: pixz?
 ospkgset pixz               xz                  pixz
 

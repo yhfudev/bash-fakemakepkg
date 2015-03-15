@@ -121,6 +121,7 @@ setup_pkgdir
 prepare_env
 
 . "${FN_PKGBUILD}"
+prepare_env
 
 #####################################################################
 DN_ORIGIN=$(pwd)
@@ -147,31 +148,21 @@ fi
 checkout_sources
 
 # call user's function
-type prepare > /dev/null
+type prepare 2>&1 > /dev/null
 if [ "$?" = "0" ]; then
     echo "[DBG] call user prepare() ..." >> "${FN_LOG}"
     ${MYEXEC} cd "${srcdir}"
     ${MYEXEC} prepare
 fi
 
-type build > /dev/null
+type build 2>&1 > /dev/null
 if [ "$?" = "0" ]; then
     echo "[DBG] call user build() ..." >> "${FN_LOG}"
     ${MYEXEC} cd "${srcdir}"
     ${MYEXEC} build
 fi
 
-type package > /dev/null
-if [ "$?" = "0" ]; then
-    echo "[DBG] call user package() ..." >> "${FN_LOG}"
-    ${MYEXEC} cd "${srcdir}"
-    ${MYEXEC} mkdir -p "${pkgdir}"
-    ${MYEXEC} package
-fi
-
-echo "[DBG] make package ..." >> "${FN_LOG}"
-${MYEXEC} cd "${srcdir}"
-${MYEXEC} makepkg_tarpkg
+call_packages
 
 if [ "${FLG_CLEAN_AFTER}" = "1" ]; then
     echo "[DBG] remove source dir '${srcdir}' ..." >> "${FN_LOG}"
