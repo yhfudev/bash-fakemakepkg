@@ -73,6 +73,7 @@ p2d_set lib32-zlib          lib32z1
 p2d_set uboot-tools         u-boot-tools
 
 p2d_set util-linux          uuid-runtime
+p2d_set libarchive          bsdtar
 
 #####################################################################
 

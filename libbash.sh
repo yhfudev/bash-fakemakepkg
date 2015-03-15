@@ -168,6 +168,7 @@ ospkgset lib32stdc++6       libstdc++.i686      lib32-libstdc++5
 ospkgset lib32z1            zlib.i686           lib32-zlib
 
 ospkgset u-boot-tools       uboot-tools         uboot-tools
+ospkgset bsdtar             bsdtar              libarchive
 
 ospkgset uuid-runtime       util-linux          util-linux
 
