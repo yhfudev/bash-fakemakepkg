@@ -674,7 +674,7 @@ call_packages() {
 
         echo "[DBG] make package ..." >> "${FN_LOG}"
         ${MYEXEC} cd "${srcdir}"
-        ${MYEXEC} makepkg_tarpkg
+        ${MYEXEC} makepkg_tarpkg "${pkgname}"
     else
         for i in ${pkgname[*]} ; do
             F=package_$i
