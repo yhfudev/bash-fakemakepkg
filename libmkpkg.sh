@@ -393,7 +393,22 @@ down_sources() {
                 DECLNXOUT_RENAME=$(echo "${DECLNXOUT_RENAME}" | ${EXEC_AWK} -F. '{b=$1; for (i=2; i < NF; i ++) {b=b "." $(i)}; print b}')
                 ;;
             esac
+            FLG_CLONENEW=0
             if [ -d "${DECLNXOUT_RENAME}" ]; then
+                cd "${DECLNXOUT_RENAME}"
+                ${MYEXEC} git remote -v | ${MYEXEC} grep "origin	${DECLNXOUT_URL}"
+                if [ ! "$?" = "0" ]; then
+                    FLG_CLONENEW=1
+                fi
+                cd -
+                echo "[DBG] Warning: the old dir contains no origin files, removing ..."
+                ${MYEXEC} rm -rf "${DECLNXOUT_RENAME}"
+                # also remove the checkout copy
+                ${MYEXEC} rm -rf "${srcdir}/${DECLNXOUT_RENAME}"
+            else
+                FLG_CLONENEW=1
+            fi
+            if [ "${FLG_CLONENEW}" = "0" ]; then
                 cd "${DECLNXOUT_RENAME}"
                 echo "[DBG] try git fetch ..."
                 ${MYEXEC} git fetch --all
