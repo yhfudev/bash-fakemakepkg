@@ -7,6 +7,8 @@ MYEXEC=
 #set MYEXEC to echo for dry run
 #MYEXEC="echo [DryRun]"
 
+#FN_LOG=libmakepkg.log
+
 if [ "${FN_LOG}" = "" ]; then
     FN_LOG="/dev/stderr"
 fi
@@ -74,6 +76,8 @@ p2d_set uboot-tools         u-boot-tools
 
 p2d_set util-linux          uuid-runtime
 p2d_set libarchive          bsdtar
+
+p2d_set gpsd                "gpsd gpsd-clients"
 
 #####################################################################
 
@@ -196,21 +200,22 @@ check_xxxsum_ok () {
     fi
 
     FLG_ERROR=1
-#echo "[DBG] checking if file exist: ${PATH_FILE}" >> "${FN_LOG}"
+    #echo "[DBG] checking if file exist: ${PATH_FILE}" >> "${FN_LOG}"
     if [ -f "${PATH_FILE}" ]; then
-#echo "[DBG] file exist: ${PATH_FILE}" >> "${FN_LOG}"
+        #echo "[DBG] file exist: ${PATH_FILE}" >> "${FN_LOG}"
         FLG_ERROR=0
         if [[ ${#md5sums[*]} > ${PARAM_CNT} ]]; then
             if [ ! "${md5sums[${PARAM_CNT}]}" = "SKIP" ]; then
                 MD5SUM=$(md5sum "${PATH_FILE}" | awk '{print $1}')
+                #echo "[DBG] file md5sum=${MD5SUM}; md5[${PARAM_CNT}]=${md5sums[${PARAM_CNT}]}" >> "${FN_LOG}"
                 if [ ! "${MD5SUM}" = "${md5sums[${PARAM_CNT}]}" ]; then
                     FLG_ERROR=1
                     echo "[DBG] file md5sum error: ${PATH_FILE}" >> "${FN_LOG}"
-                    echo "[DBG] file md5sum=${MD5SUM}; md5[${PARAM_CNT}]=${md5sums[${PARAM_CNT}]}" >> "${FN_LOG}"
                 fi
+            #else echo "[DBG] md5sum skip file: ${PATH_FILE}" >> "${FN_LOG}"
             fi
         fi
-        
+
         if [[ ${#sha1sums[*]} > ${PARAM_CNT} ]]; then
             if [ ! "${sha1sums[${PARAM_CNT}]}" = "SKIP" ]; then
                 SHASUM=$(sha1sum "${PATH_FILE}" | awk '{print $1}')
@@ -219,6 +224,7 @@ check_xxxsum_ok () {
                     echo "[DBG] file sha1sums error: ${PATH_FILE}" >> "${FN_LOG}"
                     echo "[DBG] file sha1sums=${SHASUM}; sha[${PARAM_CNT}]=${sha1sums[${PARAM_CNT}]}" >> "${FN_LOG}"
                 fi
+            #else echo "[DBG] sha1sum skip file: ${PATH_FILE}" >> "${FN_LOG}"
             fi
         fi
         if [[ ${#sha256sums[*]} > ${PARAM_CNT} ]]; then
@@ -396,15 +402,11 @@ down_sources() {
             FLG_CLONENEW=0
             if [ -d "${DECLNXOUT_RENAME}" ]; then
                 cd "${DECLNXOUT_RENAME}"
-                ${MYEXEC} git remote -v | ${MYEXEC} grep "origin	${DECLNXOUT_URL}"
+                ${MYEXEC} git remote -v | ${MYEXEC} grep "origin	${DECLNXOUT_URL}" 2>&1 > /dev/null
                 if [ ! "$?" = "0" ]; then
                     FLG_CLONENEW=1
                 fi
                 cd -
-                echo "[DBG] Warning: the old dir contains no origin files, removing ..."
-                ${MYEXEC} rm -rf "${DECLNXOUT_RENAME}"
-                # also remove the checkout copy
-                ${MYEXEC} rm -rf "${srcdir}/${DECLNXOUT_RENAME}"
             else
                 FLG_CLONENEW=1
             fi
@@ -414,6 +416,11 @@ down_sources() {
                 ${MYEXEC} git fetch --all
                 cd -
             else
+                echo "[DBG] Warning: the old dir contains no origin files, removing ..."
+                ${MYEXEC} rm -rf "${DECLNXOUT_RENAME}"
+                # also remove the checkout copy
+                ${MYEXEC} rm -rf "${srcdir}/${DECLNXOUT_RENAME}"
+
                 echo "[DBG] try git clone --no-checkout ${DECLNXOUT_URL} ${DECLNXOUT_RENAME} ..."
                 ${MYEXEC} git clone --no-checkout "${DECLNXOUT_URL}" ${DECLNXOUT_RENAME}
                 cd ${DECLNXOUT_RENAME}
@@ -458,21 +465,22 @@ down_sources() {
                 FNDOWN=$(echo "${DECLNXOUT_URL}" | awk -F? '{print $1}' | xargs basename)
             fi
             if [ "${DECLNXOUT_TOOL}" = "wget" ]; then
-#echo "[DBG] check wget file: ${FNDOWN}" >> "${FN_LOG}"
                 FLG_OK=$(check_xxxsum_ok "${SRCDEST}" "${FNDOWN}" ${CNT})
             else
-#echo "[DBG] check local file: ${FNDOWN}" >> "${FN_LOG}"
                 FLG_OK=$(check_xxxsum_ok "${BASEDIR}" "${FNDOWN}" ${CNT})
             fi
+            echo "[DBG] check sum return ${FLG_OK}"
             if [ "${FLG_OK}" = "false" ]; then
                 echo "[DBG] DECLNXOUT_RENAME=${DECLNXOUT_RENAME}, FNDOWN=${FNDOWN}" >> "${FN_LOG}"
                 if [ "${DECLNXOUT_TOOL}" = "wget" ]; then
+                    echo "[DBG] wget -O ${SRCDEST}/${FNDOWN} ${DECLNXOUT_URL}"
                     ${MYEXEC} wget -O "${SRCDEST}/${FNDOWN}" "${DECLNXOUT_URL}"
-                else
-                    echo "Error in checking file: ${DECLNXOUT_RENAME}" >> "${FN_LOG}"
-                    exit 1
+                    FLG_OK=$(check_xxxsum_ok "${SRCDEST}" "${FNDOWN}" ${CNT})
                 fi
-#else echo "[DBG] check file ok: ${FNDOWN}" >> "${FN_LOG}"
+            fi
+            if [ "${FLG_OK}" = "false" ]; then
+                echo "Error in checking file: ${DECLNXOUT_RENAME}" >> "${FN_LOG}"
+                exit 1
             fi
             ;;
         *)
@@ -480,7 +488,7 @@ down_sources() {
             cd "${SRCDEST}"
             echo "[DBG] try ${DECLNXOUT_TOOL} ${DECLNXOUT_URL} ${DECLNXOUT_RENAME} ..."
             ${MYEXEC} ${DECLNXOUT_TOOL} "${DECLNXOUT_URL}" ${DECLNXOUT_RENAME}
-           cd ${DN0}
+            cd ${DN0}
             ;;
         esac
         CNT1=$(( ${CNT1} + 1 ))

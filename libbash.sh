@@ -225,6 +225,8 @@ ospkgset nmap               nmap                nmap
 ospkgset ipmitool           ipmitool            ipmitool
 ospkgset python-mysqldb     MySQL-python        mysql-python
 
+ospkgset gpsd               gpsd                gpsd
+ospkgset gpsd-clients       gpsd-clients        gpsd
 
 
 # compile gawk with switch support
