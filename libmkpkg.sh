@@ -405,10 +405,12 @@ down_sources() {
                 ${MYEXEC} git remote -v | ${MYEXEC} grep "origin	${DECLNXOUT_URL}" 2>&1 > /dev/null
                 if [ ! "$?" = "0" ]; then
                     FLG_CLONENEW=1
+                    echo "[DBG] Warning: the old dir contains no origin files! ${DECLNXOUT_URL}"
                 fi
                 cd -
             else
                 FLG_CLONENEW=1
+                echo "[DBG] not found local repo cache"
             fi
             if [ "${FLG_CLONENEW}" = "0" ]; then
                 cd "${DECLNXOUT_RENAME}"
