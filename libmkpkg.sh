@@ -482,7 +482,7 @@ down_sources() {
             fi
             if [ "${FLG_OK}" = "false" ]; then
                 echo "Error in checking file: ${DECLNXOUT_RENAME}" >> "${FN_LOG}"
-                exit 1
+                #exit 1
             fi
             ;;
         *)
