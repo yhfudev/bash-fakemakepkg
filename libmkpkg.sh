@@ -125,7 +125,11 @@ BEGIN {
             dist_tool=b[1];
             dist_url=b[2] ":" a[4];
         } else {
-            dist_tool="wget";
+            if ((b[1] == "hg") || (b[1] == "git")) {
+                dist_tool=b[1];
+            } else {
+                dist_tool="wget";
+            }
             dist_url=a[3] ":" a[4];
         }
     } else {
@@ -659,7 +663,7 @@ arch = ${ARCH_OUT}
 license = ${license}
 backup = ${backup}
 EOF
-    for i in ${makedepends[*]} ;    do echo "makedepend = ${i}" >> .PKGINFO ; done
+    #for i in ${makedepends[*]} ;    do echo "makedepend = ${i}" >> .PKGINFO ; done
     for i in ${groups[*]} ;         do echo "groups = ${i}"     >> .PKGINFO ; done
     for i in ${backup[*]} ;         do echo "backup = ${i}"     >> .PKGINFO ; done
     for i in ${replaces[*]} ;       do echo "replaces = ${i}"   >> .PKGINFO ; done
@@ -759,22 +763,30 @@ prepare_env() {
 check_makedepends() {
 #set -x
     # add internal depends:
-    makedepends+=(
+    makedepends2=(
         'util-linux' # for uuidgen
-        )
+    )
+    for ((i=0; i<${#makedepends[@]}; i++)); do
+        makedepends2+=(${makedepends[i]});
+    done
+    for ((i=0; i<${#depends[@]}; i++)); do
+        makedepends2+=(${depends[i]});
+    done
 
     echo "Checking runtime dependencies..."
     if [ 1 -le ${#optdepends[*]} ]; then
         echo ""
         echo "You may also want to install following packages before this task to get the most wonderful experiences:"
-        for i in ${optdepends[*]} ; do
-            echo "  $i"
+        CNT1=1
+        while [ $CNT1 -le ${#optdepends[*]} ] ; do
+            echo "  ${optdepends[$CNT1]}"
+            CNT1=$(($CNT1 + 1))
         done
         echo ""
     fi
     LIST_ALT=
     LIST_MISS=
-    for i in ${makedepends[*]} ; do
+    for i in ${makedepends2[*]} ; do
         PKG1x5=$(p2d_get "Debian" "$i")
         if [ "${PKG1x5}" = "" ]; then
             PKG1x5="$i"

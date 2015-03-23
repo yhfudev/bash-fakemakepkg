@@ -366,7 +366,6 @@ check_available_package() {
     echo "ok"
 }
 
-
 check_installed_package() {
     PARAM_NAME=$*
     #INSTALLER=`ospkgget $OSTYPE apt-get`
@@ -394,9 +393,10 @@ check_installed_package() {
     #echo "enter arch for pkgs: ${PARAM_NAME}" >> "${FN_LOG}"
     for i in $PARAM_NAME ; do
         #echo "enter loop arch for pkg: ${i}" >> "${FN_LOG}"
-        PKG=$(ospkgget $OSTYPE $i)
+        PKG0=$(echo "$i" | awk -F\> '{print $1}')
+        PKG=$(ospkgget $OSTYPE $PKG0)
         if [ "${PKG}" = "" ]; then
-            PKG="$i"
+            PKG="${PKG0}"
         fi
         echo "check installed pkg: ${PKG}" >> "${FN_LOG}"
         ${EXEC_CHKPKG} "${PKG}" > /dev/null
@@ -411,6 +411,7 @@ check_installed_package() {
     done
     echo "check installed pkg: ${PARAM_NAME} return ok!" >> "${FN_LOG}"
     echo "ok"
+#set +x
 }
 
 
