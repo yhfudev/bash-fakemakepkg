@@ -146,6 +146,7 @@ ospkgset apt-get            yum                 pacman              opkg
 ospkgset apt-file           yum                 pkgfile
 ospkgset u-boot-tools       uboot-tools         uboot-tools
 ospkgset mtd-utils          mtd-utils           mtd-utils
+ospkgset initramfs-tools    initramfs-tools     mkinitcpio
 ospkgset build-essential    'Development Tools' base-devel
 ospkgset devscripts         rpmdevtools         abs
 ospkgset lsb-release        redhat-lsb-core     redhat-lsb-core
