@@ -419,6 +419,7 @@ down_sources() {
             if [ "${FLG_CLONENEW}" = "0" ]; then
                 cd "${DECLNXOUT_RENAME}"
                 echo "[DBG] try git fetch ..."
+                ${MYEXEC} echo "for branch in \$(git branch -a | grep remotes | grep -v HEAD | grep -v master); do git branch --track \${branch##*/} \$branch ; done" | ${MYEXEC} bash
                 ${MYEXEC} git fetch --all
                 cd -
             else
