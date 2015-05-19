@@ -11,6 +11,7 @@ PACKAGER="Yunhui Fu <yhfudev@gmail.com>"
 
 DN=$(pwd)
 
+EXEC_MKPKG="makepkg -Asf"
 EXEC_MKPKG="${DN}/makepkg.sh"
 
 #export GIT_SSL_NO_VERIFY=true

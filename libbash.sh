@@ -152,7 +152,7 @@ ospkgset devscripts         rpmdevtools         abs
 ospkgset lsb-release        redhat-lsb-core     redhat-lsb-core
 ospkgset openssh-client     openssh-clients     openssh-clients
 ospkgset parted             parted              parted
-ospkgset subversion         svn                 svn
+ospkgset subversion         svn                 subversion
 ospkgset git-all            git                 git
 ospkgset dhcp3-server       dhcp                dhcp
 ospkgset dhcp3-client       dhcp                dhcpcd
@@ -167,6 +167,7 @@ ospkgset kpartx             kpartx              multipath-tools
 ospkgset lib32stdc++6       libstdc++.i686      lib32-libstdc++5
 #                           libstdc++.so.6
 ospkgset lib32z1            zlib.i686           lib32-zlib
+ospkgset libjpeg62-turbo-dev libjpeg62-turbo    libjpeg-turbo
 
 ospkgset u-boot-tools       uboot-tools         uboot-tools
 ospkgset bsdtar             bsdtar              libarchive

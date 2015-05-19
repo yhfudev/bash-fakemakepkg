@@ -59,6 +59,7 @@ p2d_get () {
     hget "p2d_pkg_${PARAM_OS}_${PARAM_KEY}"
 }
 
+# when run the command in debian, use the the translate table here
 #       Arch                Debian
 p2d_set 'ncurses'           'libncurses-dev'
 p2d_set 'yaourt'            ''
@@ -79,6 +80,8 @@ p2d_set util-linux          uuid-runtime
 p2d_set libarchive          bsdtar
 
 p2d_set gpsd                "gpsd gpsd-clients"
+
+p2d_set libjpeg-turbo       libjpeg62-turbo-dev
 
 #####################################################################
 
@@ -439,6 +442,7 @@ down_sources() {
             fi
             cd ${DN0}
             ;;
+
         hg)
             DN0=$(pwd)
             cd "${SRCDEST}"
@@ -453,20 +457,41 @@ down_sources() {
             fi
             cd ${DN0}
             ;;
+
         svn)
             DN0=$(pwd)
             cd "${SRCDEST}"
-            if [ -d "${DECLNXOUT_RENAME}" ]; then
-                cd "${DECLNXOUT_RENAME}"
-                echo "[DBG] try svn update ..."
-                ${MYEXEC} svn update
-                cd -
+            FLG_CLONENEW=0
+            if [ -x "${DECLNXOUT_RENAME}/hooks/pre-revprop-change" ]; then
+                echo "[DBG] exec file exists, check if it's valid ..."
             else
-                echo "[DBG] try svn checkout ${DECLNXOUT_URL} ${DECLNXOUT_RENAME} ..."
-                ${MYEXEC} svn checkout "${DECLNXOUT_URL}" ${DECLNXOUT_RENAME}
+                FLG_CLONENEW=1
+                echo "[DBG] not found local repo cache"
+            fi
+            if [ "${FLG_CLONENEW}" = "0" ]; then
+                echo "[DBG] try svn sync ..."
+                ${MYEXEC} svnsync sync "file://$(pwd)/${DECLNXOUT_RENAME}"
+            else
+                echo "[DBG] Warning: the old dir contains no origin files, removing ..."
+                ${MYEXEC} rm -rf "${DECLNXOUT_RENAME}"
+                # also remove the checkout copy
+                ${MYEXEC} rm -rf "${srcdir}/${DECLNXOUT_RENAME}"
+
+                echo "[DBG] try create a new local repo ..."
+                ${MYEXEC} svnadmin create --fs-type fsfs ${DECLNXOUT_RENAME}
+                ${MYEXEC} cat > ${DECLNXOUT_RENAME}/hooks/pre-revprop-change << EOF
+#!/bin/sh
+exit 0;
+EOF
+                ${MYEXEC} chmod +x ${DECLNXOUT_RENAME}/hooks/pre-revprop-change
+                ${MYEXEC} svnsync init "file://$(pwd)/${DECLNXOUT_RENAME}" ${DECLNXOUT_URL}
+                ${MYEXEC} svnsync sync "file://$(pwd)/${DECLNXOUT_RENAME}"
+
+                cd -
             fi
             cd ${DN0}
             ;;
+
         wget|local)
             FNDOWN="${DECLNXOUT_RENAME}"
             if [ "${FNDOWN}" = "" ]; then
@@ -491,6 +516,7 @@ down_sources() {
                 #exit 1
             fi
             ;;
+
         *)
             DN0=$(pwd)
             cd "${SRCDEST}"
@@ -558,6 +584,7 @@ checkout_sources() {
                 #cd -
             fi
             ;;
+
         hg)
             if [ -d "${srcdir}/${FN_BASE}" ]; then
                 cd "${srcdir}/${FN_BASE}"
@@ -570,32 +597,38 @@ checkout_sources() {
                 ${MYEXEC} hg clone "${SRCDEST}/${FN_BASE}" "${srcdir}/${FN_BASE}"
             fi
             ;;
+
         svn)
             if [ -d "${srcdir}/${FN_BASE}" ]; then
-                cd "${srcdir}/${FN_BASE}"
                 echo "[DBG] try svn 'revert' ..."
-                ${MYEXEC} svn revert --recursive
+                cd "${srcdir}/${FN_BASE}"
+                ${MYEXEC} svn revert --recursive .
                 ${MYEXEC} svn update
                 cd -
             else
-                echo "[DBG] try cp -rp ${SRCDEST}/${FN_BASE} ${srcdir}/${FN_BASE} ..."
-                ${MYEXEC} cp -rp "${SRCDEST}/${FN_BASE}" "${srcdir}/${FN_BASE}"
-                ${MYEXEC} svn revert --recursive
+                echo "[DBG] try svn co file://${SRCDEST}/${FN_BASE} ${srcdir}/${FN_BASE} ..."
+                ${MYEXEC} svn co "file://${SRCDEST}/${FN_BASE}" "${srcdir}/${FN_BASE}"
+                cd "${srcdir}/${FN_BASE}"
+                ${MYEXEC} svn revert --recursive .
                 ${MYEXEC} svn update
+                cd -
             fi
             ;;
+
         wget)
             FNDOWN=$(echo "${DECLNXOUT_RENAME}" | awk -F? '{print $1}' | xargs basename)
             ${MYEXEC} rm -f "${srcdir}/${FNDOWN}"
             ${MYEXEC} ln -s "${SRCDEST}/${FNDOWN}" "${srcdir}/${FNDOWN}"
             ( cd ${srcdir}/ && ${MYEXEC} extract_file "${srcdir}/${FNDOWN}" )
             ;;
+
         local)
             FNDOWN=$(echo "${DECLNXOUT_RENAME}" | awk -F? '{print $1}' | xargs basename)
             ${MYEXEC} rm -f "${srcdir}/${FNDOWN}"
             ${MYEXEC} ln -s "${BASEDIR}/${FNDOWN}" "${srcdir}/${FNDOWN}"
             (cd ${srcdir}/ && ${MYEXEC} extract_file "${srcdir}/${FNDOWN}" )
             ;;
+
         *)
             DN0=$(pwd)
             echo "[DBG] cp -rp ${SRCDEST}/${FNDOWN} ${srcdir}/${FNDOWN} ..."
@@ -742,7 +775,7 @@ prepare_env() {
     shift
 
     if [ "${PARAM_PKGNAME}" = "" ]; then
-        if [ 1 -le ${pkgname[*]} ]; then
+        if [ 1 -le ${#pkgname[*]} ]; then
             PARAM_PKGNAME=${pkgname}
         else
             PARAM_PKGNAME=${pkgname[0]}

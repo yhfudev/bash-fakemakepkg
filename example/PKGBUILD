@@ -20,7 +20,7 @@ makedepends=(
     'base-devel' 'abs' 'fakeroot'
     # 'kernel-package' # debian packages
     )
-#install="$pkgname.install"
+#install="${pkgname}.install"
 #PKGEXT=.pkg.tar.xz
 
 provides=('example-software-git')
@@ -40,11 +40,22 @@ sha1sums=(
          'SKIP'
          )
 
-pkgver() {
-    cd "$srcdir/${pkgname}"
-    local ver="$(git show | grep commit | awk '{print $2}'  )"
+pkgver_git() {
+    cd "${srcdir}/${pkgname}"
+    local ver="$(git show | grep commit | awk '{print $2}' )"
     #printf "r%s" "${ver//[[:alpha:]]}"
     echo ${ver:0:7}
+}
+
+pkgver_svn() {
+    cd "${srcdir}/${pkgname}"
+    local ver="$(svn info | grep Revision | awk '{print $2}' )"
+    #printf "r%s" "${ver//[[:alpha:]]}"
+    echo ${ver:0:7}
+}
+
+pkgver() {
+    pkgver_git
 }
 
 prepare() {
