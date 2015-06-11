@@ -174,6 +174,10 @@ ospkgset bsdtar             bsdtar              libarchive
 
 ospkgset uuid-runtime       util-linux          util-linux
 
+
+ospkgset wiringpi           wiringpi            wiringpi-git
+
+
 # fixme: fedora: pixz?
 ospkgset pixz               xz                  pixz
 

@@ -79,6 +79,8 @@ p2d_set mkinitcpio          initramfs-tools
 p2d_set util-linux          uuid-runtime
 p2d_set libarchive          bsdtar
 
+p2d_set wiringpi-git        wiringpi
+
 p2d_set gpsd                "gpsd gpsd-clients"
 
 p2d_set libjpeg-turbo       libjpeg62-turbo-dev
