@@ -9,9 +9,7 @@ MYEXEC=
 
 #FN_LOG=libmakepkg.log
 
-if [ "${FN_LOG}" = "" ]; then
-    FN_LOG="/dev/stderr"
-fi
+[ -z "${FN_LOG}" ] && FN_LOG="/dev/stderr"
 
 BASEDIR=$(pwd)
 
@@ -20,15 +18,18 @@ if [ -f "/etc/makepkg.conf" ]; then
 . /etc/makepkg.conf
 fi
 
-if [ "${PKGDEST}" = "" ]; then
-    PKGDEST="${BASEDIR}/"
-fi
-if [ "${SRCDEST}" = "" ]; then
-    SRCDEST="${BASEDIR}/"
-fi
-if [ "${SRCPKGDEST}" = "" ]; then
-    SRCPKGDEST="${BASEDIR}/"
-fi
+[ -z "${PKGDEST:-}" ] && PKGDEST="${BASEDIR}/"
+[ -z "${SRCDEST:-}" ] && SRCDEST="${BASEDIR}/"
+[ -z "${SRCPKGDEST:-}" ] && SRCPKGDEST="${BASEDIR}/"
+
+#echo "FN_LOG=${FN_LOG}"
+#echo "PKGDEST=${PKGDEST}"
+#echo "SRCDEST=${SRCDEST:-}"
+#echo "SRCPKGDEST=${SRCPKGDEST:-}"
+#exit 0
+declare -a makedepends=()
+declare -a optdepends=()
+declare -a depends=()
 
 read_user_config () {
     PARAM_FN="$1"
@@ -424,12 +425,12 @@ down_sources() {
             fi
             if [ "${FLG_CLONENEW}" = "0" ]; then
                 cd "${DECLNXOUT_RENAME}"
-                echo "[DBG] try git fetch ..."
+                echo "[DBG] try git fetch from ${DECLNXOUT_URL}..."
                 ${MYEXEC} echo "for branch in \$(git branch -a | grep remotes | grep -v HEAD | grep -v master); do git branch --track \${branch##*/} \$branch ; done" | ${MYEXEC} bash
                 ${MYEXEC} git fetch --all
                 cd -
             else
-                echo "[DBG] Warning: the old dir contains no origin files, removing ..."
+                echo "[DBG] Warning: the old dir contains no origin files, removing ${DECLNXOUT_RENAME}..."
                 ${MYEXEC} rm -rf "${DECLNXOUT_RENAME}"
                 # also remove the checkout copy
                 ${MYEXEC} rm -rf "${srcdir}/${DECLNXOUT_RENAME}"
@@ -773,7 +774,8 @@ setup_pkgdir () {
 }
 
 prepare_env() {
-    PARAM_PKGNAME=$1
+    PARAM_PKGNAME="${1:-}"
+[ -z "${PARAM_PKGNAME}" ] && echo "Error in arg" && exit 1
     shift
 
     if [ "${PARAM_PKGNAME}" = "" ]; then
@@ -811,13 +813,11 @@ check_makedepends() {
     done
 
     echo "Checking runtime dependencies..."
-    if [ 1 -le ${#optdepends[*]} ]; then
+    if [ 1 -le ${#optdepends[@]} ]; then
         echo ""
         echo "You may also want to install following packages before this task to get the most wonderful experiences:"
-        CNT1=1
-        while [ $CNT1 -le ${#optdepends[*]} ] ; do
-            echo "  ${optdepends[$CNT1]}"
-            CNT1=$(($CNT1 + 1))
+        for ((i=0; i<${#optdepends[@]}; i++)); do
+            echo "  ${optdepends[i]}"
         done
         echo ""
     fi

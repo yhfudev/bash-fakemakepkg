@@ -81,7 +81,7 @@ usage () {
 FLG_CLEAN_BEFORE=0
 FLG_CLEAN_AFTER=0
 FN_PKGBUILD="PKGBUILD"
-while [ ! "$1" = "" ]; do
+while [ ! "${1:-}" = "" ]; do
     case "$1" in
     --help|-h)
         usage "$0"
@@ -118,10 +118,10 @@ if [ ! -f "${FN_PKGBUILD}" ]; then
 fi
 
 setup_pkgdir
-prepare_env
+prepare_env $(basename $0)
 
 . "${FN_PKGBUILD}"
-prepare_env
+prepare_env $(basename $0)
 
 #####################################################################
 DN_ORIGIN=$(pwd)
@@ -169,4 +169,5 @@ if [ "${FLG_CLEAN_AFTER}" = "1" ]; then
     ${MYEXEC} rm -rf ${srcdir}/*
 fi
 
+echo "[DBG] exit 0 ..."
 exit 0
