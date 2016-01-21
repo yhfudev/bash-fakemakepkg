@@ -25,9 +25,14 @@ EXEC_SCP="$(which scp)"
 EXEC_AWK="$(which awk)"
 EXEC_SED="$(which sed)"
 
+EXEC_SUDO=sudo
+if [ "`whoami`" = "root" ]; then
+    EXEC_SUDO=
+fi
+
 #####################################################################
 # System distribution detection
-EXEC_APTGET="sudo $(which apt-get)"
+EXEC_APTGET="${EXEC_SUDO} $(which apt-get)"
 
 OSTYPE=unknown
 OSDIST=unknown
@@ -58,7 +63,7 @@ detect_os_type () {
         ;;
 
     RedHat)
-        EXEC_APTGET="sudo `which yum`"
+        EXEC_APTGET="${EXEC_SUDO} `which yum`"
         #yum whatprovides */lsb_release
         if ! which lsb_release &> /dev/null; then
             $EXEC_APTGET --skip-broken install -y redhat-lsb-core
@@ -259,8 +264,8 @@ patch_centos_gawk () {
     # we don't install gawk to system's directory
     # instead, we install the new gawk in ~/bin
     #rpmbuild -bb --clean ~/rpmbuild/SOURCES/$(echo "${FILELIST}" | awk '{print $1}')
-    ##sudo rpm -U --force ~/rpmbuild/RPMS/$(uname -i)/gawk-4.0.1-1.el6.$(uname -i).rpm
-    #sudo rpm -U --force ~/rpmbuild/RPMS/$(uname -p)/gawk-4.0.1-1.el6.$(uname -p).rpm
+    ##${EXEC_SUDO} rpm -U --force ~/rpmbuild/RPMS/$(uname -i)/gawk-4.0.1-1.el6.$(uname -i).rpm
+    #${EXEC_SUDO} rpm -U --force ~/rpmbuild/RPMS/$(uname -p)/gawk-4.0.1-1.el6.$(uname -p).rpm
     #ln -s $(which gawk) /bin/gawk
     #ln -s $(which gawk) /bin/awk
     rpmbuild -bb ~/rpmbuild/SOURCES/$(echo "${FILELIST}" | awk '{print $1}') >> "${FN_LOG}"
@@ -499,7 +504,7 @@ install_package () {
     esac
 
     echo "try to install packages: ${PKGLST}" >> "${FN_LOG}"
-    sudo $INSTALLER ${INST_OPTS} ${PKGLST} >> "${FN_LOG}"
+    ${EXEC_SUDO} $INSTALLER ${INST_OPTS} ${PKGLST} >> "${FN_LOG}"
     if [ ! "$?" = "0" ]; then
         echo "fail"
     fi
@@ -518,14 +523,14 @@ install_arch_yaourt () {
         tar -xf package-query.tar.gz \
             && cd package-query \
             && makepkg -Asf \
-            && sudo pacman -U ./package-query-*.xz \
+            && ${EXEC_SUDO} pacman -U ./package-query-*.xz \
             && cd ..
     fi
 
     tar -xf yaourt.tar.gz \
         && cd yaourt \
         && makepkg -Asf \
-        && sudo pacman -U ./yaourt-*.xz \
+        && ${EXEC_SUDO} pacman -U ./yaourt-*.xz \
         && cd ..
 }
 
@@ -565,7 +570,7 @@ install_package_alt () {
             PKG="$i"
         fi
         echo "try to install 3rd packages: ${PKG}" >> "${FN_LOG}"
-        sudo $INSTALLER ${INST_OPTS} "${PKG}" >> "${FN_LOG}"
+        ${EXEC_SUDO} $INSTALLER ${INST_OPTS} "${PKG}" >> "${FN_LOG}"
         if [ ! "$?" = "0" ]; then
             echo "fail"
             return

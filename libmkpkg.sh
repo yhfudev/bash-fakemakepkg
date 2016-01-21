@@ -572,6 +572,8 @@ checkout_sources() {
                 cd "${srcdir}/${FN_BASE}"
                 echo "[DBG] try git 'revert' ..."
                 #${MYEXEC} git ls-files | ${MYEXEC} xargs git checkout --
+                ${MYEXEC} git reset
+                ${MYEXEC} git status | grep "deleted:" | awk '{print $2}' | ${MYEXEC} xargs git checkout --
                 ${MYEXEC} git status | grep "modified:" | awk '{print $2}' | ${MYEXEC} xargs git checkout --
                 ${MYEXEC} git fetch --all
                 ${MYEXEC} git pull --all
@@ -802,6 +804,8 @@ check_makedepends() {
     # add internal depends:
     makedepends2=(
         'util-linux' # for uuidgen
+        'sudo'
+        'gawk'
     )
     for ((i=0; i<${#makedepends[@]}; i++)); do
         makedepends2+=(${makedepends[i]});
