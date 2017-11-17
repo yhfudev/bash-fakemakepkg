@@ -214,7 +214,7 @@ check_xxxsum_ok () {
     if [ -f "${PATH_FILE}" ]; then
         #echo "[DBG] file exist: ${PATH_FILE}" >> "${FN_LOG}"
         FLG_ERROR=0
-        if [[ ${#md5sums[*]} > ${PARAM_CNT} ]]; then
+        if (( ${#md5sums[*]} > ${PARAM_CNT} )); then
             if [ ! "${md5sums[${PARAM_CNT}]}" = "SKIP" ]; then
                 MD5SUM=$(md5sum "${PATH_FILE}" | awk '{print $1}')
                 #echo "[DBG] file md5sum=${MD5SUM}; md5[${PARAM_CNT}]=${md5sums[${PARAM_CNT}]}" >> "${FN_LOG}"
@@ -226,7 +226,7 @@ check_xxxsum_ok () {
             fi
         fi
 
-        if [[ ${#sha1sums[*]} > ${PARAM_CNT} ]]; then
+        if (( ${#sha1sums[*]} > ${PARAM_CNT} )); then
             if [ ! "${sha1sums[${PARAM_CNT}]}" = "SKIP" ]; then
                 SHASUM=$(sha1sum "${PATH_FILE}" | awk '{print $1}')
                 if [ ! "${SHASUM}" = "${sha1sums[${PARAM_CNT}]}" ]; then
@@ -237,7 +237,7 @@ check_xxxsum_ok () {
             #else echo "[DBG] sha1sum skip file: ${PATH_FILE}" >> "${FN_LOG}"
             fi
         fi
-        if [[ ${#sha256sums[*]} > ${PARAM_CNT} ]]; then
+        if (( ${#sha256sums[*]} > ${PARAM_CNT} )); then
             if [ ! "${sha256sums[${PARAM_CNT}]}" = "SKIP" ]; then
                 SHASUM=$(sha256sum "${PATH_FILE}" | awk '{print $1}')
                 if [ ! "${SHASUM}" = "${sha256sums[${PARAM_CNT}]}" ]; then
@@ -247,7 +247,7 @@ check_xxxsum_ok () {
                 fi
             fi
         fi
-        if [[ ${#sha384sums[*]} > ${PARAM_CNT} ]]; then
+        if (( ${#sha384sums[*]} > ${PARAM_CNT} )); then
             if [ ! "${sha384sums[${PARAM_CNT}]}" = "SKIP" ]; then
                 SHASUM=$(sha384sum "${PATH_FILE}" | awk '{print $1}')
                 if [ ! "${SHASUM}" = "${sha384sums[${PARAM_CNT}]}" ]; then
@@ -257,7 +257,7 @@ check_xxxsum_ok () {
                 fi
             fi
         fi
-        if [[ ${#sha512sums[*]} > ${PARAM_CNT} ]]; then
+        if (( ${#sha512sums[*]} > ${PARAM_CNT} )); then
             if [ ! "${sha512sums[${PARAM_CNT}]}" = "SKIP" ]; then
                 SHASUM=$(sha512sum "${PATH_FILE}" | awk '{print $1}')
                 if [ ! "${SHASUM}" = "${sha512sums[${PARAM_CNT}]}" ]; then
